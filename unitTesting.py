@@ -22,6 +22,8 @@ class UnitTest():
         intImg2 = adaboost.integralImage(img)
         if intImg.all() == intImg2.all():
             print('Integral image test PASSED')
+        else:
+            print('Integral image test FAILED')
 
 
     def test_determineFeatures(self) -> None:
@@ -34,12 +36,11 @@ class UnitTest():
         #calculate integral image with first row and first column as zeros
         #because this is a convention
         
-        img = np.ones((384,288))
+        img = np.ones((24,24))
         # print(img.shape)
-        print('Determining features...')
-        t1 = time.time()
-        hlf = HaarLikeFeatures.HaarLikeFeature(0,0,24,24,HaarLikeFeatures.HaarLikeFeature.HaarType.TWO_VERTICAL,0,1)
+        hlf = HaarLikeFeatures.HaarLikeFeature(0,0,24,24,HaarLikeFeatures.HaarLikeFeature.HaarType.TWO_VERTICAL,0)
         features = hlf.determineFeatures(img,0,24,24)
-        t2 = time.time()
-        print('Number of features: ',len(features))
-        print('Time taken to determine features: ',t2-t1)
+        if len(features) == 162336:
+            print('Determine features test PASSED')
+        else:
+            print('Determine features test FAILED')

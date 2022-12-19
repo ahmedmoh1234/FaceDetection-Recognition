@@ -10,7 +10,7 @@ class HaarLikeFeature():
         THREE_HORIZONTAL = (3,1)
         FOUR_DIAGONAL = (2,2)
     
-    def __init__(self, x, y, width, height, haarType : HaarType, threshold , polarity) -> None:
+    def __init__(self, x, y, width, height, haarType : HaarType, threshold) -> None:
         # x : x coordinate of top left corner of the feature
         self.x = x
 
@@ -28,9 +28,7 @@ class HaarLikeFeature():
 
         # threshold : threshold value
         self.threshold = threshold
-
-        # polarity : polarity of the feature (1 or -1)
-        self.polarity = polarity
+        
         return
 
     def determineFeatures(self, img, threshold, maxFeatureWidth, maxFeatureHeight) :
@@ -44,16 +42,15 @@ class HaarLikeFeature():
         # polarity : polarity of the feature (1 or -1)
         n,m = img.shape
         haarFeatures = []
-
+        count = 0
         for haarType in HaarLikeFeature.HaarType:
             featureWidthStart = haarType.value[0]
-            for width in range(featureWidthStart,maxFeatureWidth,haarType.value[0]):
+            for width in range(featureWidthStart,maxFeatureWidth + 1,haarType.value[0]):
                 featureHeightStart = haarType.value[1]
-                for height in range(featureHeightStart,maxFeatureHeight,haarType.value[1]):
-                    for x in range(m - width):
-                        for y in range(n - height):
-                            for polarity in [-1,1]:
-                                haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold,polarity)
-                                haarFeatures.append(haarFeature)
+                for height in range(featureHeightStart,maxFeatureHeight + 1,haarType.value[1]):
+                    for x in range(m - width + 1):
+                        for y in range(n - height + 1):
+                            haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold)
+                            haarFeatures.append(haarFeature)
         return haarFeatures
 
