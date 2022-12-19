@@ -26,6 +26,7 @@ def integralImage(img):
     # integralImage[i,j] = sum of all pixels in the rectangle from (0,0) to (i,j)
     # test time complexity of this function
 
+
     #np.cumsum() is much faster than the for loop
     # intImg = np.zeros(img.shape)
     # for i in range(0,img.shape[0]):
@@ -40,7 +41,17 @@ def integralImage(img):
     #             intImg[i,j] = img[i,j] + intImg[i-1,j] + intImg[i,j-1] - intImg[i-1,j-1]
     # return intImg
 
-    return np.cumsum(np.cumsum(img,axis=0),axis=1)
+    # intImg2 = np.zeros(img.shape)
+    # for i in range(1,img.shape[0]):
+    #     for j in range(1,img.shape[1]):
+    #             intImg2[i,j] = img[i,j] + intImg2[i-1,j] + intImg2[i,j-1] - intImg2[i-1,j-1]
+
+    # return np.cumsum(np.cumsum(img,axis=0),axis=1)
+
+
+    #calculate integral image with first row and first column as zeros
+    #because this is a convention
+    return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1)
 
 #================================================================================================
 #================================================================================================
