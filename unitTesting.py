@@ -3,11 +3,11 @@ import adaboost.adaboost as adaboost
 
 class UnitTest():
 
-    def __init__(self, img) :
+    def __init__(self, img) -> None:
         self.test_integralImage(img)
         return
 
-    def test_integralImage(self, img):
+    def test_integralImage(self, img) -> None:
         # img : input image
         # n : number of rows
         # m : number of columns
