@@ -1,6 +1,6 @@
 import numpy as np
 import enum
-
+import math
 class HaarLikeFeature():
 
     class HaarType(enum.Enum):
@@ -54,3 +54,161 @@ class HaarLikeFeature():
                             haarFeatures.append(haarFeature)
         return haarFeatures
 
+
+    #function to calculate sum of pixels using the integral image
+    def calculateSum(intImg, x, y, width, height) : 
+        # intImg : integral image
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # sum : sum of pixels
+        sum = intImg[y + height, x + width] - intImg[y + height, x] - intImg[y, x + width] + intImg[y, x]
+        return sum
+
+    #function to calculate the value of the haar like feature
+    def calculateFeatureValue(self, intImg) :
+        # intImg : integral image
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        haarType = self.haarType
+        x = self.x
+        y = self.y
+        width = self.width
+        height = self.height
+        if haarType == HaarLikeFeature.HaarType.TWO_VERTICAL:
+            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
+            sum2 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
+            value = sum1 - sum2
+        elif haarType == HaarLikeFeature.HaarType.TWO_HORIZONTAL:
+            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
+            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
+            value = sum1 - sum2
+        elif haarType == HaarLikeFeature.HaarType.THREE_VERTICAL:
+            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
+            sum2 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
+            sum3 = HaarLikeFeature.calculateSum(intImg, x, y + 2*height, width, height)
+            value = sum1 - sum2 + sum3
+        elif haarType == HaarLikeFeature.HaarType.THREE_HORIZONTAL:
+            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
+            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
+            sum3 = HaarLikeFeature.calculateSum(intImg, x + 2*width, y, width, height)
+            value = sum1 - sum2 + sum3
+        elif haarType == HaarLikeFeature.HaarType.FOUR_DIAGONAL:
+            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
+            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
+            sum3 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
+            sum4 = HaarLikeFeature.calculateSum(intImg, x + width, y + height, width, height)
+            value = sum1 - sum2 - sum3 + sum4
+            
+        return value
+    
+    #function to calculate the polarity of the haar like feature
+    def calculatePolarity(self, intImg) :
+        
+        # intImg : integral image
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        # polarity : polarity of the feature (1 or -1)
+        value = self.calculateFeatureValue(intImg)
+        if value >= self.threshold:
+            polarity = 1
+        else:
+            polarity = -1
+        return polarity
+    
+    #function to calculate the error of the haar like feature
+    def calculateError(self, intImg, labels) :
+        # intImg : integral image
+        # labels : labels of the training samples
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        # polarity : polarity of the feature (1 or -1)
+        # error : error of the feature
+        polarity = self.calculatePolarity(intImg)
+        error = 0
+        for i in range(len(labels)):
+            if labels[i] != polarity:
+                error = error + 1
+        return error
+    
+    #function to calculate the weighted error of the haar like feature
+    def calculateWeightedError(self, intImg, labels, weights) :
+        # intImg : integral image
+        # labels : labels of the training samples
+        # weights : weights of the training samples
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        # polarity : polarity of the feature (1 or -1)
+        # error : error of the feature
+        # weightedError : weighted error of the feature
+        polarity = self.calculatePolarity(intImg)
+        weightedError = 0
+        for i in range(len(labels)):
+            if labels[i] != polarity:
+                weightedError = weightedError + weights[i]
+        return weightedError
+    
+    #function to update the weights of the training samples
+    def updateWeights(self, intImg, labels, weights, alpha) :
+        # intImg : integral image
+        # labels : labels of the training samples
+        # weights : weights of the training samples
+        # alpha : alpha value of the feature
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        # polarity : polarity of the feature (1 or -1)
+        # error : error of the feature
+        # weightedError : weighted error of the feature
+        # newWeights : new weights of the training samples
+        polarity = self.calculatePolarity(intImg)
+        newWeights = []
+        for i in range(len(labels)):
+            if labels[i] != polarity:
+                newWeights.append(weights[i] * math.exp(alpha))
+            else:
+                newWeights.append(weights[i] * math.exp(-alpha))
+        return newWeights
+    
+    #function to calculate the alpha value of the haar like feature
+    def calculateAlpha(self, intImg, labels, weights) :
+        
+        # intImg : integral image
+        # labels : labels of the training samples
+        # weights : weights of the training samples
+        # haarType : type of haar like feature
+        # x : x coordinate of top left corner of the feature
+        # y : y coordinate of top left corner of the feature
+        # width : width of the feature
+        # height : height of the feature
+        # value : value of the haar like feature
+        # polarity : polarity of the feature (1 or -1)
+        # error : error of the feature
+        # weightedError : weighted error of the feature
+        # alpha : alpha value of the feature
+        weightedError = self.calculateWeightedError(intImg, labels, weights)
+        alpha = 0.5 * math.log((1 - weightedError) / weightedError)
+        return alpha
+    
+    
+    
