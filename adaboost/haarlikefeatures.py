@@ -33,7 +33,7 @@ class HaarLikeFeature():
         self.polarity = polarity
         return
 
-    def determineFeatures(self, img) :
+    def determineFeatures(self, img, threshold, maxFeatureWidth, maxFeatureHeight) :
         # img : input image
         # n : number of rows
         # m : number of columns
@@ -47,13 +47,13 @@ class HaarLikeFeature():
 
         for haarType in HaarLikeFeature.HaarType:
             featureWidthStart = haarType.value[0]
-            for width in range(1,m-x):
-                for height in range(1,n-y):
-                    for x in range(0,m):
-                        for y in range(0,n):
-                            for threshold in range(0,255):
-                                for polarity in [-1,1]:
-                                    haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold,polarity)
-                                    haarFeatures.append(haarFeature)
+            for width in range(featureWidthStart,maxFeatureWidth,haarType.value[0]):
+                featureHeightStart = haarType.value[1]
+                for height in range(featureHeightStart,maxFeatureHeight,haarType.value[1]):
+                    for x in range(m - width):
+                        for y in range(n - height):
+                            for polarity in [-1,1]:
+                                haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold,polarity)
+                                haarFeatures.append(haarFeature)
         return haarFeatures
 
