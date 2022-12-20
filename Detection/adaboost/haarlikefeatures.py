@@ -1,6 +1,7 @@
 import numpy as np
 import enum
 import math
+
 class HaarLikeFeature():
 
     class HaarType(enum.Enum):
@@ -28,22 +29,16 @@ class HaarLikeFeature():
 
         # threshold : threshold value
         self.threshold = threshold
+
+        # weight : weight of the feature
+        self.weight = 0
         
         return
 
    
 
 
-    #function to calculate sum of pixels using the integral image
-    def calculateSum(intImg, x, y, width, height) : 
-        # intImg : integral image
-        # x : x coordinate of top left corner of the feature
-        # y : y coordinate of top left corner of the feature
-        # width : width of the feature
-        # height : height of the feature
-        # sum : sum of pixels
-        sum = intImg[y + height, x + width] - intImg[y + height, x] - intImg[y, x + width] + intImg[y, x]
-        return sum
+    
 
     #function to calculate the value of the haar like feature
     def calculateFeatureValue(self, intImg) :
@@ -60,29 +55,32 @@ class HaarLikeFeature():
         width = self.width
         height = self.height
         if haarType == HaarLikeFeature.HaarType.TWO_VERTICAL:
-            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
-            sum2 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
+            sum1 = calculateSum(intImg, x, y, width, height)
+            sum2 = calculateSum(intImg, x, y + height, width, height)
             value = sum1 - sum2
         elif haarType == HaarLikeFeature.HaarType.TWO_HORIZONTAL:
-            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
-            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
+            sum1 = calculateSum(intImg, x, y, width, height)
+            sum2 = calculateSum(intImg, x + width, y, width, height)
             value = sum1 - sum2
         elif haarType == HaarLikeFeature.HaarType.THREE_VERTICAL:
-            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
-            sum2 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
-            sum3 = HaarLikeFeature.calculateSum(intImg, x, y + 2*height, width, height)
+            sum1 = calculateSum(intImg, x, y, width, height)
+            sum2 = calculateSum(intImg, x, y + height, width, height)
+            sum3 = calculateSum(intImg, x, y + 2*height, width, height)
             value = sum1 - sum2 + sum3
         elif haarType == HaarLikeFeature.HaarType.THREE_HORIZONTAL:
-            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
-            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
-            sum3 = HaarLikeFeature.calculateSum(intImg, x + 2*width, y, width, height)
+            sum1 = calculateSum(intImg, x, y, width, height)
+            sum2 = calculateSum(intImg, x + width, y, width, height)
+            sum3 = calculateSum(intImg, x + 2*width, y, width, height)
             value = sum1 - sum2 + sum3
         elif haarType == HaarLikeFeature.HaarType.FOUR_DIAGONAL:
-            sum1 = HaarLikeFeature.calculateSum(intImg, x, y, width, height)
-            sum2 = HaarLikeFeature.calculateSum(intImg, x + width, y, width, height)
-            sum3 = HaarLikeFeature.calculateSum(intImg, x, y + height, width, height)
-            sum4 = HaarLikeFeature.calculateSum(intImg, x + width, y + height, width, height)
+            sum1 = calculateSum(intImg, x, y, width, height)
+            sum2 = calculateSum(intImg, x + width, y, width, height)
+            sum3 = calculateSum(intImg, x, y + height, width, height)
+            sum4 = calculateSum(intImg, x + width, y + height, width, height)
             value = sum1 - sum2 - sum3 + sum4
+        else:
+            print("=====INVALID Haar Type")
+            value = None
             
         return value
     
@@ -104,3 +102,14 @@ class HaarLikeFeature():
         else:
             vote = -1
         return vote
+
+#function to calculate sum of pixels using the integral image
+def calculateSum(intImg, x, y, width, height) : 
+    # intImg : integral image
+    # x : x coordinate of top left corner of the feature
+    # y : y coordinate of top left corner of the feature
+    # width : width of the feature
+    # height : height of the feature
+    # sum : sum of pixels
+    sum = intImg[y + height, x + width] - intImg[y + height, x] - intImg[y, x + width] + intImg[y, x]
+    return sum

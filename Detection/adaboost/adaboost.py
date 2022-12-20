@@ -1,9 +1,10 @@
 import numpy as np
-import haarlikefeatures as hlf
 from typing import List,Tuple
+
+from adaboost.haarlikefeatures import HaarLikeFeature
 #================================================================================================
 #================================================================================================
-def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List[hlf.HaarLikeFeature]:
+def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List[HaarLikeFeature]:
         # img : input image
         # n : number of rows
         # m : number of columns
@@ -15,14 +16,14 @@ def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List
         n,m = img.shape
         haarFeatures = []
         count = 0
-        for haarType in hlf.HaarLikeFeature.HaarType:
+        for haarType in HaarLikeFeature.HaarType:
             featureWidthStart = haarType.value[0]
             for width in range(featureWidthStart,maxFeatureWidth + 1,haarType.value[0]):
                 featureHeightStart = haarType.value[1]
                 for height in range(featureHeightStart,maxFeatureHeight + 1,haarType.value[1]):
                     for x in range(m - width + 1):
                         for y in range(n - height + 1):
-                            haarFeature = hlf.HaarLikeFeature(x,y,width,height,haarType,threshold)
+                            haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold)
                             haarFeatures.append(haarFeature)
         return haarFeatures
 
@@ -76,7 +77,7 @@ def integralImage(img):
 
     #calculate integral image with first row and first column as zeros
     #because this is a convention
-    return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1)
+    return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1) # type: ignore
 
 #================================================================================================
 #================================================================================================
@@ -104,7 +105,7 @@ class DecisionStump:
 #================================================================================================
 #================================================================================================
 
-class AdaBoost:
+class AdaBoostgggg:
 
     #weakClassifier : weak classifier (Gm)
     #M : number of boosting iterations
@@ -117,7 +118,7 @@ class AdaBoost:
         self.predictionErrors = []
 
     #learn tak
-    def learn(positiveImgs,negativeImgs,threshold,maxFeatureWidth,maxFeatureHeight):
+    def learn(self,positiveImgs,negativeImgs,threshold,maxFeatureWidth,maxFeatureHeight):
         # positiveImgs : list of positive images
         # negativeImgs : list of negative images
         # threshold : threshold value
@@ -167,10 +168,10 @@ class AdaBoost:
         #select classifiers
 
         classifiers = []
-        featureIndices:List[int] = List(range(nHaarFeatures))
+        featureIndices:List[int] = list(range(nHaarFeatures))
         for i in range(nHaarFeatures):
             
-            classificationError = np.zeros(len(nHaarFeatures))
+            classificationError = np.zeros(nHaarFeatures)
             
             #normALIZE WEIGHTS
             weights = weights/np.sum(weights)
