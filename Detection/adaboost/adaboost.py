@@ -16,16 +16,22 @@ def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List
         # polarity : polarity of the feature (1 or -1)
         n,m = img.shape
         haarFeatures = []
-        count = 0
         for haarType in HaarLikeFeature.HaarType:
-            featureWidthStart = haarType.value[0]
-            for width in range(featureWidthStart,maxFeatureWidth + 1,haarType.value[0]):
+            # count  = 0
+            featureWidthStart = haarType.value[0] 
+            for width in range(featureWidthStart,maxFeatureWidth+1 ,haarType.value[0]):
                 featureHeightStart = haarType.value[1]
-                for height in range(featureHeightStart,maxFeatureHeight + 1,haarType.value[1]):
-                    for x in range(m - width + 1):
-                        for y in range(n - height + 1):
+                for height in range(featureHeightStart,maxFeatureHeight+1 ,haarType.value[1]):
+                    for x in range(m - width+1):
+                        for y in range(n - height+1):
+                            if x + width > m or y + height > n:
+                                print('==========Error')
+                                print(f"x = {x}, y = {y}, width = {width}, height = {height} Image size = {img.shape}")
                             haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold)
                             haarFeatures.append(haarFeature)
+                            # count += 1
+            # print(f"Feature type = {haarType.name}, count = {count}")
+
         return haarFeatures
 
 def computeError(y,yPred,w):
@@ -84,32 +90,55 @@ def preprocessImages(positiveImgs,negativeImgs):
     # positiveImgs : list of positive images
     # negativeImgs : list of negative images
 
-    #make all images grayscale
-    positiveImgs = [img if len(img.shape)==2 else rgb2gray(img) for img in positiveImgs]
-    negativeImgs = [img if len(img.shape)==2 else rgb2gray(img) for img in negativeImgs]
+    #make all images grayscale using numpy
+    for i in range(len(positiveImgs)):
+        if len(positiveImgs[i].shape)!=2:
+            positiveImgs[i] = rgb2gray(positiveImgs[i])
+
+    for i in range(len(negativeImgs)):
+        if len(negativeImgs[i].shape)!=2:
+            negativeImgs[i] = rgb2gray(negativeImgs[i])
 
     #normalize all images
-    positiveImgs = [img/np.max(img) for img in positiveImgs]
-    negativeImgs = [img/np.max(img) for img in negativeImgs]
+    positiveImgs = positiveImgs/np.max(positiveImgs)
+    negativeImgs = negativeImgs/np.max(negativeImgs)
+
 
     #zero mean all images
-    positiveImgs = [img - np.mean(img) for img in positiveImgs]
-    negativeImgs = [img - np.mean(img) for img in negativeImgs]
+    positiveImgs = positiveImgs - np.mean(positiveImgs)
+    negativeImgs = negativeImgs - np.mean(negativeImgs)
+
 
     #unit variance all images
-    positiveImgs = [img/np.std(img) for img in positiveImgs]
-    negativeImgs = [img/np.std(img) for img in negativeImgs]
+    positiveImgs = positiveImgs/np.var(positiveImgs)
+    negativeImgs = negativeImgs/np.var(negativeImgs)
+
 
     #remove images with variance less than 1
-    positiveImgs = [img for img in positiveImgs if np.std(img)>1]
-    negativeImgs = [img for img in negativeImgs if np.std(img)>1]
+    elementsToRemove = []
+    i = 0
+    for img in positiveImgs:
+        if np.var(img)<1:
+            elementsToRemove.append(i)
+        i+=1
 
-    return positiveImgs,negativeImgs
+    newPositiveImgs = np.delete(positiveImgs,elementsToRemove,axis=0)
+
+    elementsToRemove = []
+    i = 0
+    for img in negativeImgs:
+        if np.var(img)<1:
+            elementsToRemove.append(i)
+        i+=1
+
+    newNegativeImgs = np.delete(negativeImgs,elementsToRemove,axis=0)
+
+    return newPositiveImgs,newNegativeImgs
 
 #================================================================================================
 #================================================================================================
 
-class AdaBoost:
+class AdaBoost():
 
     #weakClassifier : weak classifier (Gm)
     #M : number of boosting iterations
@@ -157,7 +186,7 @@ class AdaBoost:
         integralImages = positiveIntegralImages + negativeIntegralImages
         
         #calculate all possible haar features
-        haarFeatures = determineFeatures(integralImages[0],threshold,maxFeatureWidth,maxFeatureHeight)
+        haarFeatures = determineFeatures(positiveImgs[0],threshold,maxFeatureWidth,maxFeatureHeight)
         
         #calculate number of haar features
         nHaarFeatures = len(haarFeatures)
@@ -175,7 +204,7 @@ class AdaBoost:
         featureIndices:List[int] = list(range(nHaarFeatures))
         for i in range(nHaarFeatures):
             
-            classificationError = np.zeros(nHaarFeatures)
+            classificationError = np.zeros(len(featureIndices))
             
             #normALIZE WEIGHTS
             weights = weights/np.sum(weights)

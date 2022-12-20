@@ -54,29 +54,40 @@ class HaarLikeFeature():
         y = self.y
         width = self.width
         height = self.height
+        if (x + width >= intImg.shape[1] or y + height >= intImg.shape[0]):
+            print('Error1: Feature out of bounds')
         if haarType == HaarLikeFeature.HaarType.TWO_VERTICAL:
-            sum1 = calculateSum(intImg, x, y, width, height)
-            sum2 = calculateSum(intImg, x, y + height, width, height)
+            midHeight = math.floor(height/2)
+            sum1 = calculateSum(intImg, x, y            , width, midHeight)
+            sum2 = calculateSum(intImg, x, y + midHeight, width, midHeight)
             value = sum1 - sum2
         elif haarType == HaarLikeFeature.HaarType.TWO_HORIZONTAL:
-            sum1 = calculateSum(intImg, x, y, width, height)
-            sum2 = calculateSum(intImg, x + width, y, width, height)
+            midWidth = math.floor(width/2)
+            sum1 = calculateSum(intImg, x           , y, midWidth, height)
+            sum2 = calculateSum(intImg, x + midWidth, y, midWidth, height)
             value = sum1 - sum2
         elif haarType == HaarLikeFeature.HaarType.THREE_VERTICAL:
-            sum1 = calculateSum(intImg, x, y, width, height)
-            sum2 = calculateSum(intImg, x, y + height, width, height)
-            sum3 = calculateSum(intImg, x, y + 2*height, width, height)
+            h1 = math.floor(height/3)
+            h2 = math.floor(2*height/3)
+            sum1 = calculateSum(intImg, x, y        , width, h1)
+            sum2 = calculateSum(intImg, x, y + h1   , width, h1)
+            sum3 = calculateSum(intImg, x, y + h2   , width, h1)
             value = sum1 - sum2 + sum3
         elif haarType == HaarLikeFeature.HaarType.THREE_HORIZONTAL:
-            sum1 = calculateSum(intImg, x, y, width, height)
-            sum2 = calculateSum(intImg, x + width, y, width, height)
-            sum3 = calculateSum(intImg, x + 2*width, y, width, height)
+            w1 = math.floor(width/3)
+            w2 = math.floor(2*width/3)
+            sum1 = calculateSum(intImg, x       , y , w1, height)
+            sum2 = calculateSum(intImg, x + w1  , y , w1, height)
+            sum3 = calculateSum(intImg, x + w2  , y , w1, height)
             value = sum1 - sum2 + sum3
         elif haarType == HaarLikeFeature.HaarType.FOUR_DIAGONAL:
-            sum1 = calculateSum(intImg, x, y, width, height)
-            sum2 = calculateSum(intImg, x + width, y, width, height)
-            sum3 = calculateSum(intImg, x, y + height, width, height)
-            sum4 = calculateSum(intImg, x + width, y + height, width, height)
+            h1 = math.floor(height/2)
+            w1 = math.floor(width/2)
+
+            sum1 = calculateSum(intImg, x       , y     , w1, h1)
+            sum2 = calculateSum(intImg, x + w1  , y     , w1, h1)
+            sum3 = calculateSum(intImg, x       , y + h1, w1, h1)
+            sum4 = calculateSum(intImg, x + w1  , y + h1, w1, h1)
             value = sum1 - sum2 - sum3 + sum4
         else:
             print("=====INVALID Haar Type")
@@ -111,5 +122,8 @@ def calculateSum(intImg, x, y, width, height) :
     # width : width of the feature
     # height : height of the feature
     # sum : sum of pixels
+    if (x + width >= intImg.shape[1] or y + height >= intImg.shape[0]):
+        print('Error2: Feature out of bounds')
+        print(f"x: {x}, y: {y}, width: {width}, height: {height}, intImg.shape: {intImg.shape}")
     sum = intImg[y + height, x + width] - intImg[y + height, x] - intImg[y, x + width] + intImg[y, x]
     return sum
