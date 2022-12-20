@@ -1,5 +1,6 @@
 import numpy as np
 from typing import List,Tuple
+from skimage.color import rgb2gray
 
 from adaboost.haarlikefeatures import HaarLikeFeature
 #================================================================================================
@@ -79,33 +80,36 @@ def integralImage(img):
     #because this is a convention
     return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1) # type: ignore
 
+def preprocessImages(positiveImgs,negativeImgs):
+    # positiveImgs : list of positive images
+    # negativeImgs : list of negative images
+
+    #make all images grayscale
+    positiveImgs = [img if len(img.shape)==2 else rgb2gray(img) for img in positiveImgs]
+    negativeImgs = [img if len(img.shape)==2 else rgb2gray(img) for img in negativeImgs]
+
+    #normalize all images
+    positiveImgs = [img/np.max(img) for img in positiveImgs]
+    negativeImgs = [img/np.max(img) for img in negativeImgs]
+
+    #zero mean all images
+    positiveImgs = [img - np.mean(img) for img in positiveImgs]
+    negativeImgs = [img - np.mean(img) for img in negativeImgs]
+
+    #unit variance all images
+    positiveImgs = [img/np.std(img) for img in positiveImgs]
+    negativeImgs = [img/np.std(img) for img in negativeImgs]
+
+    #remove images with variance less than 1
+    positiveImgs = [img for img in positiveImgs if np.std(img)>1]
+    negativeImgs = [img for img in negativeImgs if np.std(img)>1]
+
+    return positiveImgs,negativeImgs
+
 #================================================================================================
 #================================================================================================
 
-class DecisionStump:
-    # Stump is a weak classifier
-    # It is a decision tree with only one split (depth = 1)
-    # It is used to classify samples into two classes
-    def __init__(self):
-        return
-
-    def classificationError(self,y,yPred):
-        # y : target variable
-        # yPred : predicted value
-        return len(y[y!=yPred])/len(y)
-
-    def predict(self,X):
-        # X : feature matrix
-        # n : number of samples
-        # m : number of features
-        return
-
-        
-
-#================================================================================================
-#================================================================================================
-
-class AdaBoostgggg:
+class AdaBoost:
 
     #weakClassifier : weak classifier (Gm)
     #M : number of boosting iterations
