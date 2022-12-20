@@ -31,28 +31,7 @@ class HaarLikeFeature():
         
         return
 
-    def determineFeatures(self, img, threshold, maxFeatureWidth, maxFeatureHeight) :
-        # img : input image
-        # n : number of rows
-        # m : number of columns
-        # haarFeatures : list of haar like features
-        # haarFeature : haar like feature
-        # haarType : type of haar like feature
-        # threshold : threshold value
-        # polarity : polarity of the feature (1 or -1)
-        n,m = img.shape
-        haarFeatures = []
-        count = 0
-        for haarType in HaarLikeFeature.HaarType:
-            featureWidthStart = haarType.value[0]
-            for width in range(featureWidthStart,maxFeatureWidth + 1,haarType.value[0]):
-                featureHeightStart = haarType.value[1]
-                for height in range(featureHeightStart,maxFeatureHeight + 1,haarType.value[1]):
-                    for x in range(m - width + 1):
-                        for y in range(n - height + 1):
-                            haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold)
-                            haarFeatures.append(haarFeature)
-        return haarFeatures
+   
 
 
     #function to calculate sum of pixels using the integral image
@@ -108,107 +87,20 @@ class HaarLikeFeature():
         return value
     
     #function to calculate the polarity of the haar like feature
-    def calculatePolarity(self, intImg) :
-        
+    def getVote(self, intImg) :
         # intImg : integral image
         # haarType : type of haar like feature
         # x : x coordinate of top left corner of the feature
         # y : y coordinate of top left corner of the feature
         # width : width of the feature
         # height : height of the feature
+        # threshold : threshold value
         # value : value of the haar like feature
-        # polarity : polarity of the feature (1 or -1)
+        # polarity : polarity of the haar like feature
         value = self.calculateFeatureValue(intImg)
-        if value >= self.threshold:
-            polarity = 1
+        threshold = self.threshold
+        if value >= threshold:
+            vote = 1
         else:
-            polarity = -1
-        return polarity
-    
-    #function to calculate the error of the haar like feature
-    def calculateError(self, intImg, labels) :
-        # intImg : integral image
-        # labels : labels of the training samples
-        # haarType : type of haar like feature
-        # x : x coordinate of top left corner of the feature
-        # y : y coordinate of top left corner of the feature
-        # width : width of the feature
-        # height : height of the feature
-        # value : value of the haar like feature
-        # polarity : polarity of the feature (1 or -1)
-        # error : error of the feature
-        polarity = self.calculatePolarity(intImg)
-        error = 0
-        for i in range(len(labels)):
-            if labels[i] != polarity:
-                error = error + 1
-        return error
-    
-    #function to calculate the weighted error of the haar like feature
-    def calculateWeightedError(self, intImg, labels, weights) :
-        # intImg : integral image
-        # labels : labels of the training samples
-        # weights : weights of the training samples
-        # haarType : type of haar like feature
-        # x : x coordinate of top left corner of the feature
-        # y : y coordinate of top left corner of the feature
-        # width : width of the feature
-        # height : height of the feature
-        # value : value of the haar like feature
-        # polarity : polarity of the feature (1 or -1)
-        # error : error of the feature
-        # weightedError : weighted error of the feature
-        polarity = self.calculatePolarity(intImg)
-        weightedError = 0
-        for i in range(len(labels)):
-            if labels[i] != polarity:
-                weightedError = weightedError + weights[i]
-        return weightedError
-    
-    #function to update the weights of the training samples
-    def updateWeights(self, intImg, labels, weights, alpha) :
-        # intImg : integral image
-        # labels : labels of the training samples
-        # weights : weights of the training samples
-        # alpha : alpha value of the feature
-        # haarType : type of haar like feature
-        # x : x coordinate of top left corner of the feature
-        # y : y coordinate of top left corner of the feature
-        # width : width of the feature
-        # height : height of the feature
-        # value : value of the haar like feature
-        # polarity : polarity of the feature (1 or -1)
-        # error : error of the feature
-        # weightedError : weighted error of the feature
-        # newWeights : new weights of the training samples
-        polarity = self.calculatePolarity(intImg)
-        newWeights = []
-        for i in range(len(labels)):
-            if labels[i] != polarity:
-                newWeights.append(weights[i] * math.exp(alpha))
-            else:
-                newWeights.append(weights[i] * math.exp(-alpha))
-        return newWeights
-    
-    #function to calculate the alpha value of the haar like feature
-    def calculateAlpha(self, intImg, labels, weights) :
-        
-        # intImg : integral image
-        # labels : labels of the training samples
-        # weights : weights of the training samples
-        # haarType : type of haar like feature
-        # x : x coordinate of top left corner of the feature
-        # y : y coordinate of top left corner of the feature
-        # width : width of the feature
-        # height : height of the feature
-        # value : value of the haar like feature
-        # polarity : polarity of the feature (1 or -1)
-        # error : error of the feature
-        # weightedError : weighted error of the feature
-        # alpha : alpha value of the feature
-        weightedError = self.calculateWeightedError(intImg, labels, weights)
-        alpha = 0.5 * math.log((1 - weightedError) / weightedError)
-        return alpha
-    
-    
-    
+            vote = -1
+        return vote
