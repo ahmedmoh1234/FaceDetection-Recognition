@@ -49,4 +49,5 @@ class UnitTest():
         if len(features) == 162336:
             print('Determine features test PASSED')
         else:
-            print('Determine features test FAILED')
+            #print with comas
+            print(f'Determine features test FAILED. No of features : {len(features):,}')
