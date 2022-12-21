@@ -202,8 +202,11 @@ class AdaBoost():
 
         classifiers = []
         featureIndices:List[int] = list(range(nHaarFeatures))
+        print(f"Training {nHaarFeatures} classifiers...")
         for i in range(nHaarFeatures):
             
+            print("\r", f"Training classifier {i+1} of {nHaarFeatures}...", end="")
+
             classificationError = np.zeros(len(featureIndices))
             
             #normALIZE WEIGHTS
