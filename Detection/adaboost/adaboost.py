@@ -1,6 +1,7 @@
 import numpy as np
 from typing import List,Tuple
 from skimage.color import rgb2gray
+from multiprocessing import Pool
 
 from adaboost.haarlikefeatures import HaarLikeFeature
 #================================================================================================
@@ -202,8 +203,19 @@ class AdaBoost():
         
         #calculate votes of all haar features for all samples
         print("Calculating votes of all haar features for all samples...")
-        for i in range(nImages):
-            votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+        #multiprocessing
+        with Pool() as p:
+            votes = p.starmap(getVotes,[(haarFeatures,integralImages[i]) for i in range(nImages)])
+        votes = np.array(votes)
+
+
+        # for i in range(nImages):
+        #     votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+
+        # if votes1.all() == votes.all():
+        #     print("Multiprocessing works!")
+        # else:
+        #     print("Multiprocessing doesn't work!")
         print("Done!")
                 
         #select classifiers
@@ -247,7 +259,7 @@ class AdaBoost():
         return classifiers
 
             
-
-
+def getVotes(haarFeatures,integralImage):
+    return np.array([haarFeature.getVote(integralImage) for haarFeature in haarFeatures])
 #================================================================================================
 #================================================================================================
