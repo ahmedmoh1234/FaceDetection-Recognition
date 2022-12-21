@@ -1,1 +1,3 @@
-/Dataset/
+Dataset/**/*.jpg
+Dataset/**/*.tar
+Dataset/**/*.tgz
