@@ -151,7 +151,7 @@ class AdaBoost():
         self.predictionErrors = []
 
     #learn tak
-    def learn(self,positiveImgs,negativeImgs,threshold,maxFeatureWidth,maxFeatureHeight):
+    def learn(self,positiveImgs,negativeImgs,threshold,maxFeatureWidth,maxFeatureHeight, nClassifiers):
         # positiveImgs : list of positive images
         # negativeImgs : list of negative images
         # threshold : threshold value
@@ -159,8 +159,10 @@ class AdaBoost():
         # maxFeatureHeight : maximum height of a feature
         
         #calculate integral images of positive and negative images
+        print("Calculating integral images...")
         positiveIntegralImages = [integralImage(img) for img in positiveImgs]
         negativeIntegralImages = [integralImage(img) for img in negativeImgs]
+        print("Done!")
         
         #calculate number of positive and negative samples
         nPositive = len(positiveImgs)
@@ -176,17 +178,21 @@ class AdaBoost():
         maxFeatureHeight = min(maxFeatureHeight,height)
         
         #create inital weights of samples and labels
+        print("Creating initial weights and labels...")
         weightPositive = np.ones(nPositive)/(2 * nPositive)
         weightNegative = np.ones(nNegative)/(2 * nNegative)
         
         weights = np.concatenate((weightPositive,weightNegative))
         
         labels = np.concatenate((np.ones(nPositive),-np.ones(nNegative)))
+        print("Done!")
         
         integralImages = positiveIntegralImages + negativeIntegralImages
         
         #calculate all possible haar features
+        print("Calculating all possible haar features...")
         haarFeatures = determineFeatures(positiveImgs[0],threshold,maxFeatureWidth,maxFeatureHeight)
+        print("Done!")
         
         #calculate number of haar features
         nHaarFeatures = len(haarFeatures)
@@ -195,17 +201,19 @@ class AdaBoost():
         votes = np.zeros((nImages,nHaarFeatures))
         
         #calculate votes of all haar features for all samples
+        print("Calculating votes of all haar features for all samples...")
         for i in range(nImages):
             votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+        print("Done!")
                 
         #select classifiers
 
         classifiers = []
         featureIndices:List[int] = list(range(nHaarFeatures))
         print(f"Training {nHaarFeatures} classifiers...")
-        for i in range(nHaarFeatures):
+        for i in range(nClassifiers):
             
-            print("\r", f"Training classifier {i+1} of {nHaarFeatures}...", end="")
+            print("\r", f"Training classifier {i+1} of {nClassifiers}...", end="")
 
             classificationError = np.zeros(len(featureIndices))
             
