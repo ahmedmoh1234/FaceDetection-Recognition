@@ -1,12 +1,13 @@
 import numpy as np
 from typing import List,Tuple
+from functools import partial
 from skimage.color import rgb2gray
 from multiprocessing import Pool
 
 from adaboost.haarlikefeatures import HaarLikeFeature
 #================================================================================================
 #================================================================================================
-def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List[HaarLikeFeature]:
+def determineFeatures(img, threshold, minFeatureWidth, minFeatuerHeight, maxFeatureWidth, maxFeatureHeight) -> List[HaarLikeFeature]:
         # img : input image
         # n : number of rows
         # m : number of columns
@@ -19,17 +20,20 @@ def determineFeatures(img, threshold, maxFeatureWidth, maxFeatureHeight) -> List
         haarFeatures = []
         for haarType in HaarLikeFeature.HaarType:
             # count  = 0
-            featureWidthStart = haarType.value[0] 
+            featureWidthStart = max(minFeatureWidth,haarType.value[0])
             for width in range(featureWidthStart,maxFeatureWidth+1 ,haarType.value[0]):
-                featureHeightStart = haarType.value[1]
+                featureHeightStart = max(minFeatuerHeight,haarType.value[1])
                 for height in range(featureHeightStart,maxFeatureHeight+1 ,haarType.value[1]):
                     for x in range(m - width+1):
                         for y in range(n - height+1):
                             if x + width > m or y + height > n:
                                 print('==========Error')
                                 print(f"x = {x}, y = {y}, width = {width}, height = {height} Image size = {img.shape}")
-                            haarFeature = HaarLikeFeature(x,y,width,height,haarType,threshold)
-                            haarFeatures.append(haarFeature)
+                            haarFeature1 = HaarLikeFeature(x,y,width,height,haarType,threshold, 1)
+                            haarFeature2 = HaarLikeFeature(x,y,width,height,haarType,threshold,-1)
+
+                            haarFeatures.append(haarFeature1)
+                            haarFeatures.append(haarFeature2)
                             # count += 1
             # print(f"Feature type = {haarType.name}, count = {count}")
 
@@ -100,20 +104,14 @@ def preprocessImages(positiveImgs,negativeImgs):
         if len(negativeImgs[i].shape)!=2:
             negativeImgs[i] = rgb2gray(negativeImgs[i])
 
-    #normalize all images
-    positiveImgs = positiveImgs/np.max(positiveImgs)
-    negativeImgs = negativeImgs/np.max(negativeImgs)
+    # #normalize all images
+    # positiveImgs = positiveImgs/np.max(positiveImgs)
+    # negativeImgs = negativeImgs/np.max(negativeImgs)
 
 
-    #zero mean all images
-    positiveImgs = positiveImgs - np.mean(positiveImgs)
-    negativeImgs = negativeImgs - np.mean(negativeImgs)
-
-
-    #unit variance all images
-    positiveImgs = positiveImgs/np.var(positiveImgs)
-    negativeImgs = negativeImgs/np.var(negativeImgs)
-
+    #zero mean and unit variance
+    positiveImgs = (positiveImgs - np.mean(positiveImgs))/np.std(positiveImgs)
+    negativeImgs = (negativeImgs - np.mean(negativeImgs))/np.std(negativeImgs)
 
     #remove images with variance less than 1
     elementsToRemove = []
@@ -152,7 +150,7 @@ class AdaBoost():
         self.predictionErrors = []
 
     #learn tak
-    def learn(self,positiveImgs,negativeImgs,threshold,maxFeatureWidth,maxFeatureHeight, nClassifiers):
+    def learn(self,positiveImgs,negativeImgs,threshold,minFeatureWidth, minFeatureHeight,maxFeatureWidth,maxFeatureHeight, nClassifiers):
         # positiveImgs : list of positive images
         # negativeImgs : list of negative images
         # threshold : threshold value
@@ -163,7 +161,7 @@ class AdaBoost():
         print("Calculating integral images...")
         positiveIntegralImages = [integralImage(img) for img in positiveImgs]
         negativeIntegralImages = [integralImage(img) for img in negativeImgs]
-        print("Done!")
+        print("Done!\n")
         
         #calculate number of positive and negative samples
         nPositive = len(positiveImgs)
@@ -186,14 +184,14 @@ class AdaBoost():
         weights = np.concatenate((weightPositive,weightNegative))
         
         labels = np.concatenate((np.ones(nPositive),-np.ones(nNegative)))
-        print("Done!")
+        print("Done!\n")
         
         integralImages = positiveIntegralImages + negativeIntegralImages
         
         #calculate all possible haar features
         print("Calculating all possible haar features...")
-        haarFeatures = determineFeatures(positiveImgs[0],threshold,maxFeatureWidth,maxFeatureHeight)
-        print("Done!")
+        haarFeatures = determineFeatures(positiveImgs[0],threshold,minFeatureWidth,minFeatureHeight,maxFeatureWidth,maxFeatureHeight)
+        print("Done!\n")
         
         #calculate number of haar features
         nHaarFeatures = len(haarFeatures)
@@ -203,11 +201,10 @@ class AdaBoost():
         
         #calculate votes of all haar features for all samples
         print("Calculating votes of all haar features for all samples...")
-        #multiprocessing
-        with Pool() as p:
-            votes = p.starmap(getVotes,[(haarFeatures,integralImages[i]) for i in range(nImages)])
-        votes = np.array(votes)
 
+        pool = Pool(processes=None)
+        for i in range(nImages):
+            votes[i,:] = np.array(list(pool.map(partial(getFeatureVote, integralImage=integralImages[i]), haarFeatures)))
 
         # for i in range(nImages):
         #     votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
@@ -216,7 +213,7 @@ class AdaBoost():
         #     print("Multiprocessing works!")
         # else:
         #     print("Multiprocessing doesn't work!")
-        print("Done!")
+        print("Done!\n")
                 
         #select classifiers
 
@@ -234,8 +231,10 @@ class AdaBoost():
             
             #select classifier with minimum weighted error  
             for j in range(len(featureIndices)):
-                #calculate classification error
-                classificationError[j] = np.sum(weights[labels!=votes[:,featureIndices[j]]])
+                fIndex = featureIndices[j]
+                #calculate weighted error
+                classificationError[j] = np.sum(weights[labels!=votes[:,fIndex]])
+                
                 
             minErrorIndex = np.argmin(classificationError)
             bestError = classificationError[minErrorIndex]
@@ -258,8 +257,12 @@ class AdaBoost():
 
         return classifiers
 
-            
-def getVotes(haarFeatures,integralImage):
-    return np.array([haarFeature.getVote(integralImage) for haarFeature in haarFeatures])
+def getFeatureVote(feature : HaarLikeFeature ,integralImage):
+    return feature.getVote(integralImage)
+
+
+def getVotes(haarFeatures ,integralImage):
+    #Threshold = 0 because each feature votes for 1 or -1
+    return 1 if np.sum(c.getVote(integralImage) for c in haarFeatures) >= 0 else 0
 #================================================================================================
 #================================================================================================

@@ -11,7 +11,7 @@ class HaarLikeFeature():
         THREE_HORIZONTAL = (3,1)
         FOUR_DIAGONAL = (2,2)
     
-    def __init__(self, x, y, width, height, haarType : HaarType, threshold) -> None:
+    def __init__(self, x, y, width, height, haarType : HaarType, threshold, polarity) -> None:
         # x : x coordinate of top left corner of the feature
         self.x = x
 
@@ -32,6 +32,9 @@ class HaarLikeFeature():
 
         # weight : weight of the feature
         self.weight = 0
+
+        # polarity : polarity of the feature
+        self.polarity = polarity
         
         return
 
@@ -106,12 +109,12 @@ class HaarLikeFeature():
         # threshold : threshold value
         # value : value of the haar like feature
         # polarity : polarity of the haar like feature
-        value = self.calculateFeatureValue(intImg)
+        value = self.calculateFeatureValue(intImg) * self.polarity
         threshold = self.threshold
         if value >= threshold:
-            vote = 1
+            vote = 1 * self.weight
         else:
-            vote = -1
+            vote = -1 * self.weight
         return vote
 
 #function to calculate sum of pixels using the integral image

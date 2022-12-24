@@ -44,9 +44,9 @@ class UnitTest():
         
         img = np.ones((24,24))
         # print(img.shape)
-        hlf = HLF.HaarLikeFeature(0,0,24,24,HLF.HaarLikeFeature.HaarType.TWO_VERTICAL,0)
-        features = ab.determineFeatures(img,0,24,24)
-        if len(features) == 162336:
+        # hlf = HLF.HaarLikeFeature(0,0,24,24,HLF.HaarLikeFeature.HaarType.TWO_VERTICAL,0, 1)
+        features = ab.determineFeatures(img,0,0,0,24,24)
+        if len(features) == 162336 * 2:
             print('Determine features test PASSED')
         else:
             #print with comas
