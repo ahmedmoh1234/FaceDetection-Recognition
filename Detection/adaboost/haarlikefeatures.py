@@ -31,7 +31,7 @@ class HaarLikeFeature():
         self.threshold = threshold
 
         # weight : weight of the feature
-        self.weight = 0
+        self.weight = 1
 
         # polarity : polarity of the feature
         self.polarity = polarity
