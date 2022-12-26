@@ -1,9 +1,8 @@
 import numpy as np
-import time
 
 # import adaboost.adaboost as adaboost
 import adaboost.haarlikefeatures as HLF
-import adaboost.adaboost as ab
+import utilitis as ut
 
 
 
@@ -29,7 +28,7 @@ class UnitTest():
         for i in range(1, img.shape[0] + 1):
             for j in range(1, img.shape[1] + 1):
                 intImg[i][j] = intImg[i][j - 1] + intImg[i - 1][j] - intImg[i - 1][j - 1] + img[i - 1][j - 1]
-        intImg2 = ab.integralImage(img)
+        intImg2 = ut.integralImage(img)
         if intImg.all() == intImg2.all():
             print('Integral image test PASSED')
         else:
@@ -50,7 +49,7 @@ class UnitTest():
         img = np.ones((24,24))
         # print(img.shape)
         # hlf = HLF.HaarLikeFeature(0,0,24,24,HLF.HaarLikeFeature.HaarType.TWO_VERTICAL,0, 1)
-        features = ab.determineFeatures(img,0,0,0,24,24)
+        features = ut.determineFeatures(img,0,0,0,24,24)
         if len(features) == 162336 * 2:
             print('Determine features test PASSED')
         else:
@@ -83,7 +82,7 @@ class UnitTest():
 
         targetSum = 8
 
-        intImg = ab.integralImage(orgImage)
+        intImg = ut.integralImage(orgImage)
         #The output of integralImage is that
         #   0.  0.  0.  0.  0.
         #   0.  1.  2.  3.  4.
@@ -91,7 +90,8 @@ class UnitTest():
         #   0.  3. (7. 13.)16.
         #   0.  4.  9. 16. 20.
 
-        sum = HLF.calculateSum(intImg, x, y, width, height)
+        tempFeature = HLF.HaarLikeFeature(x, y, width, height, HLF.HaarLikeFeature.HaarType.TWO_VERTICAL, 0, 1)
+        sum = tempFeature.calculateSum(intImg, x, y, width, height)
         if sum == targetSum:
             print('Calculate sum test 1 PASSED')
         else:
@@ -118,7 +118,7 @@ class UnitTest():
         width = 4
         height = 2
 
-        intImg = ab.integralImage(orgImg)
+        intImg = ut.integralImage(orgImg)
         # intImg now looks like this:
         #   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.   0.
         #   0.   1.   2.   3.   4.   5.   6.   7.   8.   9.  10.
@@ -134,7 +134,7 @@ class UnitTest():
 
         targetSum = 16
 
-        sum = HLF.calculateSum(intImg, x, y, width, height)
+        sum = tempFeature.calculateSum(intImg, x, y, width, height)
         if sum == targetSum:
             print('Calculate sum test 2 PASSED')
         else:
@@ -158,7 +158,7 @@ class UnitTest():
 
         targetSum = 27
 
-        intImg = ab.integralImage(orgImg)
+        intImg = ut.integralImage(orgImg)
         # intImg now looks like this:
         #  0.  0.  0.  0.  0.  0.
         #  0. (1.  2.) 3.  4.  5.
@@ -167,7 +167,7 @@ class UnitTest():
         #  0.  4. 14. 33. 49. 53.
         #  0.  5. 16. 36. 53. 58.
 
-        sum = HLF.calculateSum(intImg, x, y, width, height)
+        sum = tempFeature.calculateSum(intImg, x, y, width, height)
         if sum == targetSum:
             print('Calculate sum test 3 PASSED')
         else:
@@ -190,7 +190,7 @@ class UnitTest():
         width = 3
         height = 3
 
-        intImg = ab.integralImage(testImg)
+        intImg = ut.integralImage(testImg)
 
         hFeature = HLF.HaarLikeFeature(x, y, width, height, HLF.HaarLikeFeature.HaarType.THREE_VERTICAL,0,1) 
         # hFeature now looks like this:
