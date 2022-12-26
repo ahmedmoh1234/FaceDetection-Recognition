@@ -59,6 +59,7 @@ class HaarLikeFeature():
         height = self.height
         if (x + width >= intImg.shape[1] or y + height >= intImg.shape[0]):
             print('Error1: Feature out of bounds')
+            print(f"intImg shape: {intImg.shape}")
         if haarType == HaarLikeFeature.HaarType.TWO_VERTICAL:
             midHeight = math.floor(height/2)
             sum1 = calculateSum(intImg, x, y            , width, midHeight)
@@ -109,6 +110,9 @@ class HaarLikeFeature():
         # threshold : threshold value
         # value : value of the haar like feature
         # polarity : polarity of the haar like feature
+
+        # print(f"getvote int image shape: {intImg.shape}")
+
         value = self.calculateFeatureValue(intImg) * self.polarity
         threshold = self.threshold
         if value >= threshold:
@@ -125,8 +129,12 @@ def calculateSum(intImg, x, y, width, height) :
     # width : width of the feature
     # height : height of the feature
     # sum : sum of pixels
+    x = x + 1
+    y = y + 1
+    height = height - 1
+    width = width - 1
     if (x + width >= intImg.shape[1] or y + height >= intImg.shape[0]):
         print('Error2: Feature out of bounds')
         print(f"x: {x}, y: {y}, width: {width}, height: {height}, intImg.shape: {intImg.shape}")
-    sum = intImg[y + height, x + width] - intImg[y + height, x] - intImg[y, x + width] + intImg[y, x]
+    sum = intImg[y + height, x + width] - intImg[y + height, x - 1] - intImg[y - 1, x + width] + intImg[y - 1, x - 1]
     return sum

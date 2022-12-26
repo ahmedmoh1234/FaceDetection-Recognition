@@ -21,11 +21,12 @@ def determineFeatures(img, threshold, minFeatureWidth, minFeatuerHeight, maxFeat
         for haarType in HaarLikeFeature.HaarType:
             # count  = 0
             featureWidthStart = max(minFeatureWidth,haarType.value[0])
-            for width in range(featureWidthStart,maxFeatureWidth+1 ,haarType.value[0]):
+            for width in range(featureWidthStart,maxFeatureWidth,haarType.value[0]):
                 featureHeightStart = max(minFeatuerHeight,haarType.value[1])
-                for height in range(featureHeightStart,maxFeatureHeight+1 ,haarType.value[1]):
-                    for x in range(m - width+1):
-                        for y in range(n - height+1):
+                for height in range(featureHeightStart,maxFeatureHeight ,haarType.value[1]):
+                    #============CHANGED================
+                    for x in range(m - width):
+                        for y in range(n - height):
                             if x + width > m or y + height > n:
                                 print('==========Error')
                                 print(f"x = {x}, y = {y}, width = {width}, height = {height} Image size = {img.shape}")
@@ -36,7 +37,7 @@ def determineFeatures(img, threshold, minFeatureWidth, minFeatuerHeight, maxFeat
                             haarFeatures.append(haarFeature2)
                             # count += 1
             # print(f"Feature type = {haarType.name}, count = {count}")
-
+        print(f"Total number of features = {len(haarFeatures)}")
         return haarFeatures
 
 def computeError(y,yPred,w):
@@ -89,7 +90,11 @@ def integralImage(img):
 
     #calculate integral image with first row and first column as zeros
     #because this is a convention
-    return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1) # type: ignore
+    ii = np.zeros((img.shape[0]+1,img.shape[1]+1))
+    # print(ii.shape)
+    ii[1:,1:] = np.cumsum(np.cumsum(img,axis=0),axis=1)
+    return ii
+    # return np.cumsum(np.cumsum(np.pad(img,((1,0),(1,0)),'constant'),axis=0),axis=1) # type: ignore
 
 def preprocessImages(positiveImgs,negativeImgs):
     # positiveImgs : list of positive images
@@ -104,14 +109,17 @@ def preprocessImages(positiveImgs,negativeImgs):
         if len(negativeImgs[i].shape)!=2:
             negativeImgs[i] = rgb2gray(negativeImgs[i])
 
-    # #normalize all images
-    # positiveImgs = positiveImgs/np.max(positiveImgs)
-    # negativeImgs = negativeImgs/np.max(negativeImgs)
 
+    #normalize all images
+    positiveImgs = positiveImgs/np.max(positiveImgs)
+    negativeImgs = negativeImgs/np.max(negativeImgs)
+
+    positiveImgs = positiveImgs * 255
+    negativeImgs = negativeImgs * 255
 
     #zero mean and unit variance
-    positiveImgs = (positiveImgs - np.mean(positiveImgs))/np.std(positiveImgs)
-    negativeImgs = (negativeImgs - np.mean(negativeImgs))/np.std(negativeImgs)
+    # positiveImgs = (positiveImgs - np.mean(positiveImgs))/np.std(positiveImgs)
+    # negativeImgs = (negativeImgs - np.mean(negativeImgs))/np.std(negativeImgs)
 
     #remove images with variance less than 1
     elementsToRemove = []
@@ -162,6 +170,8 @@ class AdaBoost():
         positiveIntegralImages = [integralImage(img) for img in positiveImgs]
         negativeIntegralImages = [integralImage(img) for img in negativeImgs]
         print("Done!\n")
+
+        # print(f"shape of positive integral image: {positiveIntegralImages[0].shape}")
         
         #calculate number of positive and negative samples
         nPositive = len(positiveImgs)
@@ -173,20 +183,25 @@ class AdaBoost():
         #calculate number of rows and columns of the images
         height,width = positiveImgs[0].shape
         
-        maxFeatureWidth = min(maxFeatureWidth,width)
-        maxFeatureHeight = min(maxFeatureHeight,height)
+        #============CHANGED================
+        # maxFeatureWidth = min(maxFeatureWidth,width)
+        # maxFeatureHeight = min(maxFeatureHeight,height)
+        
         
         #create inital weights of samples and labels
         print("Creating initial weights and labels...")
-        weightPositive = np.ones(nPositive)/(2 * nPositive)
-        weightNegative = np.ones(nNegative)/(2 * nNegative)
+        weightPositive = np.ones(nPositive) * 1. /(2 * nPositive)
+        weightNegative = np.ones(nNegative) * 1. /(2 * nNegative)
         
-        weights = np.concatenate((weightPositive,weightNegative))
+        #============CHANGED================
+        weights = np.hstack((weightPositive,weightNegative))
         
-        labels = np.concatenate((np.ones(nPositive),-np.ones(nNegative)))
+        #============CHANGED================
+        labels = np.hstack((np.ones(nPositive),np.ones(nNegative) * -1))
         print("Done!\n")
         
         integralImages = positiveIntegralImages + negativeIntegralImages
+
         
         #calculate all possible haar features
         print("Calculating all possible haar features...")
@@ -195,6 +210,9 @@ class AdaBoost():
         
         #calculate number of haar features
         nHaarFeatures = len(haarFeatures)
+
+        featureIndices = list(range(nHaarFeatures))
+
         
         #create feature matrix
         votes = np.zeros((nImages,nHaarFeatures))
@@ -202,12 +220,15 @@ class AdaBoost():
         #calculate votes of all haar features for all samples
         print("Calculating votes of all haar features for all samples...")
 
+
         pool = Pool(processes=None)
         for i in range(nImages):
             votes[i,:] = np.array(list(pool.map(partial(getFeatureVote, integralImage=integralImages[i]), haarFeatures)))
 
+
+        # votes1 = np.zeros((nImages,nHaarFeatures))
         # for i in range(nImages):
-        #     votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+        #     votes1[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
 
         # if votes1.all() == votes.all():
         #     print("Multiprocessing works!")
@@ -218,7 +239,6 @@ class AdaBoost():
         #select classifiers
 
         classifiers = []
-        featureIndices:List[int] = list(range(nHaarFeatures))
         print(f"Training {nHaarFeatures} classifiers...")
         for i in range(nClassifiers):
             
@@ -242,6 +262,8 @@ class AdaBoost():
             
             #set feature weight
             bestFeature = haarFeatures[bestFeatureIndex]
+            if bestError == 0:
+                bestError = 0.1
             bestFeature.weight = 0.5 * np.log((1-bestError)/bestError)
             
             classifiers.append(bestFeature)
@@ -258,11 +280,11 @@ class AdaBoost():
         return classifiers
 
 def getFeatureVote(feature : HaarLikeFeature ,integralImage):
+    # print(f"getfeature vote int img shape: {integralImage.shape}")
     return feature.getVote(integralImage)
 
 
 def getVotes(haarFeatures ,integralImage):
     #Threshold = 0 because each feature votes for 1 or -1
-    return 1 if np.sum(c.getVote(integralImage) for c in haarFeatures) >= 0 else 0
-#================================================================================================
+    return 1 if np.sum(c.getVote(integralImage) for c in haarFeatures) >= 0 else 0 # type: ignore
 #================================================================================================
