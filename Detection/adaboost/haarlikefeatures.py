@@ -38,7 +38,65 @@ class HaarLikeFeature():
         
         return
 
-   
+    def __add__(self, other):
+        if isinstance(other, tuple):
+            self.x += int(other[0])
+            self.y += int(other[1])
+        return self
+
+    def __mul__(self, other):
+        if isinstance(other, float):
+            self.x *= other
+            self.x = int(self.x)
+
+            self.y *= other
+            self.y = int(self.y)
+
+            if self.haarType == HaarLikeFeature.HaarType.TWO_HORIZONTAL:
+                self.width = int(self.width * other)
+
+                tempHeight = self.height
+                tempHeight *= other
+                tempHeight = int(tempHeight)
+                tempHeight -= tempHeight % 2
+                self.height = int(tempHeight)
+            elif self.haarType == HaarLikeFeature.HaarType.TWO_VERTICAL:
+                tempWidth = self.width
+                tempWidth *= other
+                tempWidth = int(tempWidth)
+                tempWidth -= tempWidth % 2
+                self.width = int(tempWidth)
+
+                self.height = int( (self.height * other))
+            elif self.haarType == HaarLikeFeature.HaarType.THREE_HORIZONTAL:
+                self.width = int( (self.width * other))
+
+                tempHeight = self.height
+                tempHeight *= other
+                tempHeight = int(tempHeight)
+                tempHeight -= tempHeight % 3
+                self.height = int(tempHeight)
+            elif self.haarType == HaarLikeFeature.HaarType.THREE_VERTICAL:
+                tempWidth = self.width
+                tempWidth *= other
+                tempWidth = int(tempWidth)
+                tempWidth -= tempWidth % 3
+                self.width = int(tempWidth)
+
+                self.height =  (self.height * other)
+            elif self.haarType == HaarLikeFeature.HaarType.FOUR_DIAGONAL:
+                tempHeight = self.height
+                tempHeight *= other
+                tempHeight = int(tempHeight)
+                tempHeight -= tempHeight % 2
+                self.height = int(tempHeight)
+
+                tempWidth = self.width
+                tempWidth *= other
+                tempWidth = int(tempWidth)
+                tempWidth -= tempWidth % 2
+                self.width = int(tempWidth)
+        return self
 
 
     
