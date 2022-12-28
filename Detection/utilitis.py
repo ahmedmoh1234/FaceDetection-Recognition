@@ -95,31 +95,34 @@ def preprocessImages(positiveImgs,negativeImgs) -> Tuple[np.ndarray,np.ndarray]:
     positiveImgs = positiveImgs/np.max(positiveImgs)
     negativeImgs = negativeImgs/np.max(negativeImgs)
 
-    positiveImgs = positiveImgs * 255
-    negativeImgs = negativeImgs * 255
+    # positiveImgs = positiveImgs * 255
+    # negativeImgs = negativeImgs * 255
 
     #zero mean and unit variance
-    # positiveImgs = (positiveImgs - np.mean(positiveImgs))/np.std(positiveImgs)
-    # negativeImgs = (negativeImgs - np.mean(negativeImgs))/np.std(negativeImgs)
+    positiveImgs = (positiveImgs )/np.std(positiveImgs)
+    negativeImgs = (negativeImgs )/np.std(negativeImgs)
 
     #remove images with variance less than 1
-    elementsToRemove = []
-    i = 0
-    for img in positiveImgs:
-        if np.var(img)<1:
-            elementsToRemove.append(i)
-        i+=1
+    # elementsToRemove = []
+    # i = 0
+    # for img in positiveImgs:
+    #     if np.var(img)<1:
+    #         elementsToRemove.append(i)
+    #     i+=1
 
-    newPositiveImgs = np.delete(positiveImgs,elementsToRemove,axis=0)
+    # newPositiveImgs = np.delete(positiveImgs,elementsToRemove,axis=0)
 
-    elementsToRemove = []
-    i = 0
-    for img in negativeImgs:
-        if np.var(img)<1:
-            elementsToRemove.append(i)
-        i+=1
+    # elementsToRemove = []
+    # i = 0
+    # for img in negativeImgs:
+    #     if np.var(img)<1:
+    #         elementsToRemove.append(i)
+    #     i+=1
 
-    newNegativeImgs = np.delete(negativeImgs,elementsToRemove,axis=0)
+    # newNegativeImgs = np.delete(negativeImgs,elementsToRemove,axis=0)
+
+    newPositiveImgs = positiveImgs
+    newNegativeImgs = negativeImgs
 
     return newPositiveImgs,newNegativeImgs
 

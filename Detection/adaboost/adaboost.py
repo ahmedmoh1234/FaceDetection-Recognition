@@ -82,12 +82,15 @@ class AdaBoost():
         votes = np.zeros((nImages,nHaarFeatures))
         
         #calculate votes of all haar features for all samples
-        print("Calculating votes of all haar features for all samples...")
-
-
-        pool = Pool(processes=None)
-        for i in range(nImages):
-            votes[i,:] = np.array(list(pool.map(partial(ut.getFeatureVote, integralImage=integralImages[i]), haarFeatures)))
+        try:
+            votes = np.load("votes" + str(minFeatureWidth) + "-" +str(maxFeatureWidth)+ ".npy", allow_pickle=True)
+            print("Loading votes from file...")
+        except:
+            print("Calculating votes of all haar features for all samples...")
+            for i in range(nImages):
+                votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+            np.save("votes" +  str(minFeatureWidth) + "-" +str(maxFeatureWidth)+ ".npy", votes)
+        print("Done!\n")
 
 
         # votes1 = np.zeros((nImages,nHaarFeatures))
@@ -97,9 +100,7 @@ class AdaBoost():
         # if votes1.all() == votes.all():
         #     print("Multiprocessing works!")
         # else:
-        #     print("Multiprocessing doesn't work!")
-        print("Done!\n")
-                
+        #     print("Multiprocessing doesn't work!")                
         #select classifiers
 
         classifiers = []
