@@ -35,6 +35,8 @@ class HaarLikeFeature():
 
         # polarity : polarity of the feature
         self.polarity = polarity
+
+        self.scale = 1
         
         return
 
@@ -45,7 +47,9 @@ class HaarLikeFeature():
         return self
 
     def __mul__(self, other):
-        if isinstance(other, float):
+        if isinstance(other, float) or isinstance(other, int):
+            self.scale = other
+
             self.x *= other
             self.x = int(self.x)
 
@@ -67,7 +71,8 @@ class HaarLikeFeature():
                 tempWidth -= tempWidth % 2
                 self.width = int(tempWidth)
 
-                self.height = int( (self.height * other))
+                tempHeight = self.height
+                self.height = int( tempHeight * other)
             elif self.haarType == HaarLikeFeature.HaarType.THREE_HORIZONTAL:
                 self.width = int( (self.width * other))
 
@@ -83,7 +88,7 @@ class HaarLikeFeature():
                 tempWidth -= tempWidth % 3
                 self.width = int(tempWidth)
 
-                self.height =  (self.height * other)
+                self.height = int(self.height * other)
             elif self.haarType == HaarLikeFeature.HaarType.FOUR_DIAGONAL:
                 tempHeight = self.height
                 tempHeight *= other
