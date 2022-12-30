@@ -54,8 +54,8 @@ class AdaBoost():
         
         #create inital weights of samples and labels
         print("Creating initial weights and labels...")
-        weightPositive = np.ones(nPositive) * 1. /(2 * nPositive)
-        weightNegative = np.ones(nNegative) * 1. /(2 * nNegative)
+        weightPositive = np.ones(nPositive) * 1. /(2 * nImages)
+        weightNegative = np.ones(nNegative) * 1. /(2 * nImages)
         
         #============CHANGED================
         weights = np.hstack((weightPositive,weightNegative))
@@ -102,6 +102,108 @@ class AdaBoost():
         # else:
         #     print("Multiprocessing doesn't work!")                
         #select classifiers
+
+        classifiers = []
+        print(f"Training {nHaarFeatures} classifiers...")
+        for i in range(nClassifiers):
+            
+            print("\r", f"Training classifier {i+1} of {nClassifiers}...", end="")
+
+            classificationError = np.zeros(len(featureIndices))
+            
+            #normALIZE WEIGHTS
+            weights = weights/np.sum(weights)
+            
+            #select classifier with minimum weighted error  
+            for j in range(len(featureIndices)):
+                fIndex = featureIndices[j]
+                #calculate weighted error
+                classificationError[j] = np.sum(weights[labels!=votes[:,fIndex]])
+                
+                
+            minErrorIndex = np.argmin(classificationError)
+            bestError = classificationError[minErrorIndex]
+            bestFeatureIndex = featureIndices[minErrorIndex]
+            
+            #set feature weight
+            bestFeature = haarFeatures[bestFeatureIndex]
+            if bestError == 0:
+                bestError = 0.1
+            bestFeature.weight = 0.5 * np.log((1-bestError)/bestError)
+            
+            classifiers.append(bestFeature)
+            # update image weights
+            weights[labels!=votes[:,bestFeatureIndex]] *= np.exp(bestFeature.weight)
+            weights[labels==votes[:,bestFeatureIndex]] *= np.exp(-bestFeature.weight)
+            
+            #normalize weights
+            weights = weights/np.sum(weights)
+            
+            #remove selected feature from feature list
+            featureIndices.remove(bestFeatureIndex)
+
+        return classifiers
+
+
+    def train(self,positiveImgs,negativeImgs, nClassifiers,haarFeatures):
+        # positiveImgs : list of positive images
+        # negativeImgs : list of negative images
+        # threshold : threshold value
+        # maxFeatureWidth : maximum width of a feature
+        # maxFeatureHeight : maximum height of a feature
+        
+        #calculate integral images of positive and negative images
+        print("Calculating integral images...")
+        positiveIntegralImages = [ut.integralImage(img) for img in positiveImgs]
+        negativeIntegralImages = [ut.integralImage(img) for img in negativeImgs]
+        print("Done!\n")
+
+        # print(f"shape of positive integral image: {positiveIntegralImages[0].shape}")
+        
+        #calculate number of positive and negative samples
+        nPositive = len(positiveImgs)
+        nNegative = len(negativeImgs)
+        
+        #calculate number of features
+        nImages = nPositive + nNegative
+        
+        #calculate number of rows and columns of the images
+        height,width = positiveImgs[0].shape
+        
+        #============CHANGED================
+        # maxFeatureWidth = min(maxFeatureWidth,width)
+        # maxFeatureHeight = min(maxFeatureHeight,height)
+        
+        
+        #create inital weights of samples and labels
+        print("Creating initial weights and labels...")
+        weightPositive = np.ones(nPositive) * 1. /(2 * nPositive)
+        weightNegative = np.ones(nNegative) * 1. /(2 * nNegative)
+        
+        #============CHANGED================
+        weights = np.hstack((weightPositive,weightNegative))
+        
+        #============CHANGED================
+        labels = np.hstack((np.ones(nPositive),np.ones(nNegative) * -1))
+        print("Done!\n")
+        
+        integralImages = positiveIntegralImages + negativeIntegralImages
+        
+        #calculate number of haar features
+        nHaarFeatures = len(haarFeatures)
+
+        featureIndices = list(range(nHaarFeatures))
+
+        
+        #create feature matrix
+        votes = np.zeros((nImages,nHaarFeatures))
+        
+        #calculate votes of all haar features for all samples
+        print("Calculating votes of all haar features for all samples...")
+        for i in range(nImages):
+            votes[i,:] = np.array([haarFeatures[j].getVote(integralImages[i]) for j in range(nHaarFeatures)])
+        # np.save("votes" +  str(minFeatureWidth) + "-" +str(maxFeatureWidth)+ ".npy", votes)
+        print("Done!\n")
 
         classifiers = []
         print(f"Training {nHaarFeatures} classifiers...")
