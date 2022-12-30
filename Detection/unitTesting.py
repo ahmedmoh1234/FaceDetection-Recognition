@@ -54,7 +54,8 @@ class UnitTest():
             print('Determine features test PASSED')
         else:
             #print with comas
-            print(f'Determine features test FAILED. No of features : {len(features):,}')
+            # print(f'Determine features test FAILED. No of features : {len(features):,}')
+            return
 
     
     def test_calculateSum(self) -> None:
