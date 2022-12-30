@@ -133,5 +133,11 @@ def getFeatureVote(feature : HLF.HaarLikeFeature ,integralImage) -> float:
 
 def getVotes(haarFeatures ,integralImage) -> int:
     #Threshold = 0 because each feature votes for 1 or -1
-    return 1 if np.sum(c.getVote(integralImage) for c in haarFeatures) >= 0 else 0 # type: ignore
+    votes = 0
+    for c in haarFeatures:
+        votes += c.getVote(integralImage)
+        if votes < 0:
+            return 0
+    return 1
+    # return 1 if np.sum(c.getVote(integralImage) for c in haarFeatures) >= 0 else 0 # type: ignore
 
