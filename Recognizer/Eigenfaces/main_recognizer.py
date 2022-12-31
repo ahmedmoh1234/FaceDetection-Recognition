@@ -9,6 +9,7 @@ import os
 
 # ------------------------------ GET CURRENT PATH ------------------------------
 dirname = os.path.abspath(os.getcwd())
+dirname += '\Recognizer\Eigenfaces'
 dataset_path = os.path.join(dirname, 'Datasets')
 test_images_path = os.path.join(dirname, 'Test Images')
 training_result_path = os.path.join(dirname, 'Training Result Data')
@@ -20,7 +21,7 @@ eigenfaces_path = os.path.join(training_result_path, 'eigenfaces.npy')
 # ---------------------------- LOAD OLIVIETTA DATASET ---------------------------- #
 
 def load_dataset():
-    print(dataset_path)
+    # print(dataset_path)
     dataset = fetch_olivetti_faces(data_home=dataset_path, shuffle=True)
     return dataset
 
@@ -337,7 +338,7 @@ def recognizer_main(input_image):
     dataset = load_dataset()
     images, _, height, width, _, _, _, _ = extract_info_from_dataset(dataset)
     omegas, eigenfaces, average_image = load_data()
-    show_eigenfaces(eigenfaces, height, width, 320)
+    # show_eigenfaces(eigenfaces, height, width, 320)
     input_image = convert_image(input_image, width, height)
 
     predicted_index = predict(
