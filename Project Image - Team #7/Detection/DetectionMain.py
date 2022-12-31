@@ -5,7 +5,6 @@ from skimage.transform import resize
 import time
 import numpy as np
 import os
-import sys
 import copy
 from tqdm.auto import tqdm
 

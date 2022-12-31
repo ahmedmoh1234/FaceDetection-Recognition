@@ -390,7 +390,7 @@ def recognizer_main(input_image):
     plt.imshow(input_image.reshape(height,width), cmap='gray', label='Input image')
     plt.show()
 
-    predicted_index = predict(omegas, input_image, average_image, eigenfaces, height, width, 120)
+    predicted_index = predict(omegas, input_image, average_image, eigenfaces, height, width, 70)
     if (predicted_index == -1):
         print('Unknown face')
     else:

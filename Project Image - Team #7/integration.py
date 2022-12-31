@@ -12,28 +12,14 @@ test_images_path = os.path.join(dirname, 'Test Images')
 
 
 def main(image_path):
+    train()
     classifiersToBeUsed = DetectionMain.trainDetector()
     # img = io.imread(test_images_path + '/Mostafa_1.jpeg')
     img = io.imread(image_path)
-    detectedFace = DetectionMain.detector_main(img , classifiersToBeUsed)
-    if(detectedFace):
+    # detectedFace = DetectionMain.detector_main(img , classifiersToBeUsed)
+    if(True):
         # Recognize the face
         main_recognizer.recognizer_main(img)
-
-    # img = io.imread(test_images_path + '/1.png')
-
-    # detectedFace = DetectionMain.detector_main(img, classifiersToBeUsed)
-    # if(detectedFace):
-    #     # Recognize the face
-    #     main_recognizer.recognizer_main(img)
-
-
-    # img = io.imread(test_images_path + '/Apple.jpg')
-
-    # detectedFace = DetectionMain.detector_main(img, classifiersToBeUsed)
-    # if(detectedFace):
-    #     # Recognize the face
-    #     main_recognizer.recognizer_main(img)
 
 
 def train():
@@ -44,5 +30,5 @@ def train():
 
 
 if __name__ == '__main__':
-    # train()
+    train()
     main()
