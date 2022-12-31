@@ -5,30 +5,32 @@ import sys
 sys.path.append('Recognizer/Eigenfaces')
 import main_recognizer
 sys.path.append('Detection')
-# import DetectionMain
+import DetectionMain
 
 dirname = os.path.abspath(os.getcwd())
 test_images_path = os.path.join(dirname, 'Test Images')
 
 
 def main():
+    classifiersToBeUsed = DetectionMain.trainDetector()
     img = io.imread(test_images_path + '/testImg.jpg')
-    # detectedFace = DetectionMain.detector_main(img)
-    if(True):
+    detectedFace = DetectionMain.detector_main(img , classifiersToBeUsed)
+    if(detectedFace):
         # Recognize the face
         main_recognizer.recognizer_main(img)
 
     img = io.imread(test_images_path + '/Lopez.jpg')
 
-    # detectedFace = DetectionMain.detector_main(img)
-    if(True):
+    detectedFace = DetectionMain.detector_main(img, classifiersToBeUsed)
+    if(detectedFace):
         # Recognize the face
         main_recognizer.recognizer_main(img)
 
-    img = io.imread(test_images_path + '/olivetti_faces_10.jpg')
 
-    # detectedFace = DetectionMain.detector_main(img)
-    if(True):
+    img = io.imread(test_images_path + '/Apple.jpg')
+
+    detectedFace = DetectionMain.detector_main(img, classifiersToBeUsed)
+    if(detectedFace):
         # Recognize the face
         main_recognizer.recognizer_main(img)
 
