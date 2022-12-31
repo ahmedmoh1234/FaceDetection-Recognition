@@ -11,15 +11,18 @@ from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
 
+def recognize():
+    #call integration file and send to it the image path
+    pass
 
+
+image_path = ''
 def browseFiles():
     image_path = filedialog.askopenfilename(initialdir="/",
                                           title="Select a File",
                                           )
                          
 
-def recognize():
-    pass
 
 def window():
     app = QApplication(sys.argv)
