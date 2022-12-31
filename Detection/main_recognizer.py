@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 from sklearn.datasets import fetch_olivetti_faces
 import matplotlib.pyplot as plt
@@ -7,11 +6,13 @@ import skimage.io as io
 from skimage.color import rgb2gray
 import cv2
 
-# %%
+import os
+_file_ = os.path.abspath(__file__)
+dirname = os.path.dirname(_file_)
+
 dataset_path = 'D:\Senior II\Image Processing\Project\Datasets\Olivietta Dataset'
 omegas_path = 'omegas.npy'
 
-# %%
 # ---------------------------- LOAD OLIVETTI DATASET ---------------------------- #
 
 
@@ -19,8 +20,6 @@ def load_dataset():
     dataset = fetch_olivetti_faces(
         data_home='D:\Senior II\Image Processing\Project\Datasets/Olivietta Dataset', shuffle=True, random_state=47)
     return dataset
-
-# %%
 
 
 def extract_info_from_dataset(dataset, verbose=False):
@@ -62,7 +61,6 @@ def extract_info_from_dataset(dataset, verbose=False):
 
     return images, m, height, width, total_images, n_features, y, num_people
 
-# %%
 #----------------------- CREATE PEOPLE DICTIONARY -----------------------#
 
 
@@ -78,7 +76,6 @@ def create_people_dict(total_images, num_people, y):
             person_image_dict[y[image_index]].append(image_index)
     return person_image_dict
 
-# %%
 # ------------------ VIEW RANDOM IMAGE ------------------ #
 
 
@@ -92,7 +89,6 @@ def view_rand_image(images, m):
     plt.imshow(image, cmap='gray')
     plt.show()
 
-# %%
 # --------------------- GET FLATTEN IMAGES --------------------- #
 
 
@@ -109,9 +105,8 @@ def get_flattened_images(images, m, height, width, verbose=False):
 
     return flattened_images
 
-
-# %%
 # ----------------- CALCULATE AVERAGE IMAGE ----------------- #
+
 
 def get_average_image(flattened_images, height, width, verbose=False):
     # In all corresponding pixels in all images, we calculate the average
@@ -125,7 +120,6 @@ def get_average_image(flattened_images, height, width, verbose=False):
         plt.show()
     return average_image
 
-# %%
 #-------------------------------- GET DIFFERENCE IMAGES --------------------------------#
 
 
@@ -140,7 +134,6 @@ def get_difference_images(flattened_images, average_image, verbose=False):
     return difference_images
 
 
-# %%
 # --------------------- SHOW ONE DIFFERENCE IMAGE AND COMPARE TO ORIGINAL --------------------- #
 
 def show_difference_image(difference_images, train_images, height, width, m):
@@ -154,7 +147,6 @@ def show_difference_image(difference_images, train_images, height, width, m):
     plt.imshow(train_images[index, :, :], cmap='gray')
     plt.show()
 
-# %%
 #--------------------- GET COVARIANCE MATRIX --------------------- #
 
 
@@ -179,7 +171,6 @@ def get_covariance_matrix(m, n_features, difference_images, verbose=False):
                   covariance_matrix.shape)
         return covariance_matrix
 
-# %%
 # --------------------------------- GET EIGENVALUES AND EIGENVECTORS --------------------------------- #
 
 
@@ -202,9 +193,8 @@ def eigenvalues_eigenfaces(covariance_matrix, difference_images, verbose=False):
 
     return eigenvalues, eigenfaces
 
-# %%
-# --------------------------------- NORMALIZE eigenfaces --------------------------------- #
 
+# --------------------------------- NORMALIZE eigenfaces --------------------------------- #
 
 def normalize_eigenfaces(eigenfaces, verbose=False):
     eigenfaces = eigenfaces / np.linalg.norm(eigenfaces, axis=0)
@@ -212,9 +202,8 @@ def normalize_eigenfaces(eigenfaces, verbose=False):
         print('Shape of eigenfaces after normalization:', eigenfaces.shape)
     return eigenfaces
 
-# %%
-# ------------------------ SORT eigenfaces ------------------------ #
 
+# ------------------------ SORT eigenfaces ------------------------ #
 
 def sort_eigenvalues_eigenfaces(eigenvalues, eigenfaces):
     # Get top K eigenfaces
@@ -223,9 +212,8 @@ def sort_eigenvalues_eigenfaces(eigenvalues, eigenfaces):
     eigenfaces = eigenfaces[:, indices_of_top_eigenvalues]
     return eigenvalues, eigenfaces
 
-# %%
-# --------------------------------- CALCULATE K --------------------------------- #
 
+# --------------------------------- CALCULATE K --------------------------------- #
 
 def calculate_K(eigenvalues, m, variance=0.8, verbose=False):
     # Calculate the number of components to preserve specified variance
@@ -239,7 +227,6 @@ def calculate_K(eigenvalues, m, variance=0.8, verbose=False):
         print(
             f'Number of components to preserve {variance*100}% of the variance = {K}')
 
-# %%
 # --------------------------------- SELECT K TOP eigenfaces --------------------------------- #
 
 
@@ -254,10 +241,8 @@ def select_K_top_eigenfaces(eigenvalues, eigenfaces, K, verbose=False):
         print('Shape of eigenfaces after selecting top K:', eigenfaces.shape)
     return eigenvalues, eigenfaces
 
-# %%
 
 # ------------------------ SHOW EIGENFACES ------------------------ #
-
 
 def show_eigenfaces(eigenfaces, height, width, K, num_show=16):
     # Show eigenfaces
@@ -267,16 +252,14 @@ def show_eigenfaces(eigenfaces, height, width, K, num_show=16):
         plt.title(f'Eigenface {i+1}')
         plt.axis('off')
 
-# %%
-# ------------------------ SHOW A RANDOM EIGENFACE ------------------------ #
 
+# ------------------------ SHOW A RANDOM EIGENFACE ------------------------ #
 
 def show_random_eigenface(eigenfaces, height, width, m):
     index = int(random.random() * m)
     plt.imshow(eigenfaces[:, index].reshape(height, width), cmap='gray')
     plt.show()
 
-# %%
 # ------------------------ CALCULATE OMEGAS ------------------------ #
 
 
@@ -289,7 +272,6 @@ def get_omegas(difference_images, eigenfaces, verbose=False):
         print('Shape of omegas:', omegas.shape)
     return omegas
 
-# %%
 # ------------------------ SAVE OMEGAS TO DISK ------------------------ #
 
 
@@ -299,20 +281,17 @@ def save_data_to_disk(omegas, eigenfaces, average_image):
     np.save('average_image.npy', average_image)
 
 
-# %%
 def load_data():
-    omegas = np.load('omegas.npy')
-    eigenfaces = np.load('eigenfaces.npy')
-    average_image = np.load('average_image.npy')
+    omegas_path = os.path.join(dirname, 'omegas.npy')
+    omegas = np.load(omegas_path, allow_pickle=True)
+    eigenfaces_path = os.path.join(dirname, 'eigenfaces.npy')
+    eigenfaces = np.load(eigenfaces_path, allow_pickle=True)
+    average_image_path = os.path.join(dirname, 'average_image.npy')
+    average_image = np.load(average_image_path, allow_pickle=True)
     return omegas, eigenfaces, average_image
 
-# %% [markdown]
-# ## Testing
 
-# %%
-
-
-def predict(omegas, test_image, average_image, eigenfaces, height, width, threshold):
+def predict(omegas, test_image, average_image, eigenfaces, height, width, threshold=7):
     # Predict the class of a test image
     # Calculate omega for test image
     omega = np.matmul((test_image - average_image).T, eigenfaces)
@@ -325,44 +304,71 @@ def predict(omegas, test_image, average_image, eigenfaces, height, width, thresh
 
     # Get min distance
     min_distance = distances[index]
-
-    if(min_distance < threshold):
+    print('Min distance:', min_distance)
+    if(min_distance < float('inf')):
         return index
     else:
         return -1  # Unknown
 
-# %%
-
 
 def convert_image(image, width, height):
+    plt.imshow(image, cmap='gray', label='Input image')
+    plt.show()
     # if image is RGB, convert to grayscale
     if len(image.shape) > 2:
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        image = rgb2gray(image)
     # resize image to width*height
     image = cv2.resize(image, (width, height))
-    # flatten image if it is not already
-    if (len(image.shape) == 1):
-        image = image[:, np.newaxis]
-    elif (image.shape[1] != 1 or image.shape[0] != 1):
-        image = image.reshape(-1, 1)
-
+    if (np.max(image) > 1):
+        image = image / 255.0
+    image = image.reshape((width*height, 1))
     # Show image
-    plt.imshow(image.reshape(height, width), cmap='gray', label='Input image')
-    plt.show()
+    # plt.imshow(image.reshape(height, width), cmap='gray', label='Input image')
+    # plt.show()
 
     return image
 
-# %% [markdown]
-# ## Recognizer Main
 
-# %%
+# def recognizer_main(input_image):
+#     dataset = load_dataset()
+#     images, _, height, width, _, _, _, _ = extract_info_from_dataset(dataset)
+#     omegas, eigenfaces, average_image = load_data()
+#     # print('Omegas', omegas.shape)
+#     show_eigenfaces(eigenfaces, height, width, 320)
+#     input_image = convert_image(input_image, width, height)
+
+#     predicted_index = predict(
+#         omegas, input_image, average_image, eigenfaces, height, width, 7)
+#     if (predicted_index == -1):
+#         print('Unknown face')
+#     else:
+#         # print('Predicted index:', predicted_index)
+#         print('Known face')
+#         # show predicted image
+#         plt.imshow(images[predicted_index],
+#                    cmap='gray', label='Predicted image')
+#         plt.show()
 
 
 def recognizer_main(input_image):
     dataset = load_dataset()
-    images, _, height, width, _, _, _, _ = extract_info_from_dataset(dataset)
-    omegas, eigenfaces, average_image = load_data()
-
+    images, m, height, width, total_images, n_features, y, num_people = extract_info_from_dataset(
+        dataset)
+    input_image = convert_image(input_image, width, height)
+    #people_dict = create_people_dict(total_images, num_people, y)
+    flattened_images = get_flattened_images(images, m, height, width)
+    average_image = get_average_image(flattened_images, height, width)
+    difference_images = get_difference_images(flattened_images, average_image)
+    covariance_matrix = get_covariance_matrix(m, n_features, difference_images)
+    eigenvalues, eigenfaces = eigenvalues_eigenfaces(
+        covariance_matrix, difference_images)
+    eigenfaces = normalize_eigenfaces(eigenfaces)
+    eigenvalues, eigenfaces = sort_eigenvalues_eigenfaces(
+        eigenvalues, eigenfaces)
+    K = calculate_K(eigenvalues, m)
+    eigenvalues, eigenfaces = select_K_top_eigenfaces(
+        eigenvalues, eigenfaces, K)
+    omegas = get_omegas(difference_images, eigenfaces)
     predicted_index = predict(
         omegas, input_image, average_image, eigenfaces, height, width, 7)
     if (predicted_index == -1):
@@ -374,8 +380,6 @@ def recognizer_main(input_image):
         plt.imshow(images[predicted_index],
                    cmap='gray', label='Predicted image')
         plt.show()
-
-# %%
 
 
 def train(save_path):
@@ -397,8 +401,3 @@ def train(save_path):
         eigenvalues, eigenfaces, K)
     omegas = get_omegas(difference_images, eigenfaces)
     save_data_to_disk(omegas, eigenfaces, average_image)
-
-
-# %%
-naderTest = io.imread('naderTest.jpg')
-recognizer_main(naderTest)
