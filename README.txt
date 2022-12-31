@@ -1,6 +1,6 @@
 Face Detection:
 
-Face detection requires the following libraries:
+Face detection requires the following libraries (Python modules are not included):
 	- NumPy
 	- skimage
 	- tqdm (Progress bar)
@@ -27,6 +27,7 @@ Face recognition required the followgin libraries:
 	- cv2
 	- os
 	- Skimmage
+	- PyQt5
 
 We created the following files:
 	- main_recognizer.py
