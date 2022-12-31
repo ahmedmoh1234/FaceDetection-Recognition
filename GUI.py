@@ -10,24 +10,30 @@ from PyQt5.QtWidgets import QFileDialog, QDialog
 from PyQt5 import QtCore
 from PyQt5 import QtGui
 from PyQt5.QtGui import QPixmap
+import integration
+        
+image_path = ''
 
 def recognize():
-    #call integration file and send to it the image path
-    pass
+    global image_path
+    if(image_path==''):
+        browseFiles()
+    if(image_path==''):
+        return
+        
+    integration.main(image_path)
+    image_path=''
+    
 
-
-image_path = ''
 def browseFiles():
-    image_path = filedialog.askopenfilename(initialdir="/",
-                                          title="Select a File",
-                                          )
-                         
-
+    global image_path
+    image_path = filedialog.askopenfilename(initialdir="/",title="Select a File")
+    
 
 def window():
     app = QApplication(sys.argv)
     win = QMainWindow()
-    win.setGeometry(20, 50, 400, 180)
+    win.setGeometry(20, 50, 550, 300)
     win.setWindowTitle("GUI")
 
     b1 = QtWidgets.QPushButton(win)

@@ -192,7 +192,8 @@ def scaleFeatures(features, scale):
 
 def predict(img2, classifiersToBeUsedFn) -> list:
     img = np.copy(img2)
-    if len(img.shape) == 3:
+    if len(img.shape) >2:
+        img = img[:,:,:3]
         img = rgb2gray(img)
     img = img/img.max()
     img = img / np.var(img)

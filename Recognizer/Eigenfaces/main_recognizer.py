@@ -13,6 +13,7 @@ dirname += '\Recognizer\Eigenfaces'
 dataset_path = os.path.join(dirname, 'Datasets')
 test_images_path = os.path.join(dirname, 'Test Images')
 training_result_path = os.path.join(dirname, 'Training Result Data')
+people_path = os.path.join(dataset_path, 'People')
 omegas_path = os.path.join(training_result_path, 'omegas.npy')
 average_image_path = os.path.join(training_result_path, 'average_image.npy')
 eigenfaces_path = os.path.join(training_result_path, 'eigenfaces.npy')
@@ -24,8 +25,40 @@ def load_olivetti_dataset():
     dataset = fetch_olivetti_faces(data_home=dataset_path, shuffle=True)
     return dataset
 
+def load_our_dataset():
+    #  Loop over every directory in people path
+    y = dict()
+    images = []
+    i=0
+    min_width = float('inf')
+    min_height = float('inf')
+    
+    for directory in os.listdir(people_path):
+        #  Loop over every image in the directory
+        for image in os.listdir(os.path.join(people_path, directory)):
+            #  Load the image
+            img = io.imread(os.path.join(people_path, directory, image))
+            img = rgb2gray(img)
+            # resize image to width*height
+            if (np.max(img) > 1):
+                img = img / 255.0
+            
+            if(img.shape[0] < min_height):
+                min_height = img.shape[0]
+            if(img.shape[1] < min_width):
+                min_width = img.shape[1]
+                
+            images.append(img)
+            y[i] = [directory]
+            i+=1
+    
+    images = np.array([cv2.resize(image, (min_height, min_width))for image in images])
+        
+    return images,y
+    
 
-def extract_info_from_dataset(dataset, verbose=False):
+
+def extract_info_from_olivetti_dataset(dataset, verbose=False):
     '''
     Returns: 
         - images: ndarray(m, height, width): the images of the dataset
@@ -63,6 +96,26 @@ def extract_info_from_dataset(dataset, verbose=False):
         print('Number of people =', num_people)
 
     return images, m, height, width, total_images, n_features, y, num_people
+
+def extract_info_from_our_dataset(images,y,verbose=False):
+    m = images.shape[0]
+    if(verbose):
+        print('Images shape:', images.shape)
+
+    total_images, height, width = images.shape
+    if(verbose):
+        print(f'Each image has size: {height} x {width}')
+        print(70 * '-')
+
+    n_features = height*width
+    if(verbose):
+        print(f'N^2 = n_features = h x w = {n_features}')
+        print(70 * '-')
+
+    if(verbose):
+        print('y has shape:', y.shape)
+
+    return images, m, height, width, total_images, n_features, y
 
 #----------------------- CREATE PEOPLE DICTIONARY -----------------------#
 
@@ -314,46 +367,46 @@ def predict(omegas, test_image, average_image, eigenfaces, height, width, thresh
 
 
 def convert_image(image, width, height):
-    plt.imshow(image, cmap='gray', label='Input image')
-    plt.show()
     # if image is RGB, convert to grayscale
     if len(image.shape) > 2:
+        image = image[:,:,:3]
         image = rgb2gray(image)
     # resize image to width*height
     image = cv2.resize(image, (width, height))
     if (np.max(image) > 1):
         image = image / 255.0
     image = image.reshape((width*height, 1))
-    # Show image
-    plt.imshow(image.reshape(height, width), cmap='gray', label='Input image')
-    plt.show()
-
     return image
+
 
 
 # -------------------------------- MAIN FUNCTION FOR RECOGNIZER -------------------------------- #
 
 def recognizer_main(input_image):
-    dataset = load_olivetti_dataset()
-    images, _, height, width, _, _, _, _ = extract_info_from_dataset(dataset)
+    # dataset = load_olivetti_dataset()
+    # images, _, height, width, _, _, _, _ = extract_info_from_olivetti_dataset(dataset)
+    images, y = load_our_dataset()
+    images, _, height, width, _, _, _ = extract_info_from_our_dataset(images,y)
+    
     omegas, eigenfaces, average_image = load_data()
-    # show_eigenfaces(eigenfaces, height, width, 320)
     input_image = convert_image(input_image, width, height)
+    plt.imshow(input_image.reshape(height,width), cmap='gray', label='Input image')
+    plt.show()
 
-    predicted_index = predict(
-        omegas, input_image, average_image, eigenfaces, height, width, 7)
+    predicted_index = predict(omegas, input_image, average_image, eigenfaces, height, width, 120)
     if (predicted_index == -1):
         print('Unknown face')
     else:
         print('Known face')
         # show predicted image
-        plt.imshow(images[predicted_index],
-                   cmap='gray', label='Predicted image')
+        print("Target Index: ", y[predicted_index])
+        plt.imshow(images[predicted_index],cmap='gray', label='Predicted image')
         plt.show()
 
-def train():
+
+def train_olivetti():
     dataset = load_olivetti_dataset()
-    images, m, height, width, total_images, n_features, y, num_people = extract_info_from_dataset(
+    images, m, height, width, total_images, n_features, y, num_people = extract_info_from_olivetti_dataset(
         dataset)
     flattened_images = get_flattened_images(images, m, height, width)
     average_image = get_average_image(flattened_images, height, width)
@@ -361,6 +414,21 @@ def train():
     covariance_matrix = get_covariance_matrix(m, n_features, difference_images)
     eigenvalues, eigenfaces = eigenvalues_eigenfaces(
         covariance_matrix, difference_images)
+    eigenfaces = normalize_eigenfaces(eigenfaces)
+    eigenvalues, eigenfaces = sort_eigenvalues_eigenfaces(eigenvalues, eigenfaces)
+    K = calculate_K(eigenvalues, m)
+    eigenvalues, eigenfaces = select_K_top_eigenfaces(eigenvalues, eigenfaces, K)
+    omegas = get_omegas(difference_images, eigenfaces)
+    save_data_to_disk(omegas, eigenfaces, average_image)
+    
+def train_our():
+    images,y = load_our_dataset()
+    images, m, height, width, total_images, n_features, y = extract_info_from_our_dataset(images,y)
+    flattened_images = get_flattened_images(images, m, height, width)
+    average_image = get_average_image(flattened_images, height, width)
+    difference_images = get_difference_images(flattened_images, average_image)
+    covariance_matrix = get_covariance_matrix(m, n_features, difference_images)
+    eigenvalues, eigenfaces = eigenvalues_eigenfaces(covariance_matrix, difference_images)
     eigenfaces = normalize_eigenfaces(eigenfaces)
     eigenvalues, eigenfaces = sort_eigenvalues_eigenfaces(eigenvalues, eigenfaces)
     K = calculate_K(eigenvalues, m)
