@@ -20,8 +20,7 @@ eigenfaces_path = os.path.join(training_result_path, 'eigenfaces.npy')
 
 # ---------------------------- LOAD OLIVIETTA DATASET ---------------------------- #
 
-def load_dataset():
-    # print(dataset_path)
+def load_olivetti_dataset():
     dataset = fetch_olivetti_faces(data_home=dataset_path, shuffle=True)
     return dataset
 
@@ -335,7 +334,7 @@ def convert_image(image, width, height):
 # -------------------------------- MAIN FUNCTION FOR RECOGNIZER -------------------------------- #
 
 def recognizer_main(input_image):
-    dataset = load_dataset()
+    dataset = load_olivetti_dataset()
     images, _, height, width, _, _, _, _ = extract_info_from_dataset(dataset)
     omegas, eigenfaces, average_image = load_data()
     # show_eigenfaces(eigenfaces, height, width, 320)
@@ -353,7 +352,7 @@ def recognizer_main(input_image):
         plt.show()
 
 def train():
-    dataset = load_dataset()
+    dataset = load_olivetti_dataset()
     images, m, height, width, total_images, n_features, y, num_people = extract_info_from_dataset(
         dataset)
     flattened_images = get_flattened_images(images, m, height, width)
