@@ -304,8 +304,8 @@ def predict(omegas, test_image, average_image, eigenfaces, height, width, thresh
 
     # Get min distance
     min_distance = distances[index]
-    print('Min distance:', min_distance)
-    if(min_distance < float('inf')):
+    # print('Min distance:', min_distance)
+    if(min_distance < threshold):
         return index
     else:
         return -1  # Unknown

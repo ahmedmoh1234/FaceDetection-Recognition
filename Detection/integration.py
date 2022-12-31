@@ -8,20 +8,26 @@ dirname = os.path.dirname(_file_)
 
 
 def main():
-    # imgPath = os.path.join(dirname, 'testImg.jpg')
-    imgPath = os.path.join(dirname, 'olivetti_faces_10.jpg')
+    imgPath = os.path.join(dirname, 'testImg.jpg')
     img = io.imread(imgPath)
     # detectedFace = DetectionMain.detector_main(img)
     if(True):
         # Recognize the face
         main_recognizer.recognizer_main(img)
 
-    # imgPath = os.path.join(dirname, 'TestImg/Lopez.jpg')
-    # img = io.imread(imgPath)
-    # # detectedFace = DetectionMain.detector_main(img)
-    # if(True):
-    #     # Recognize the face
-    #     main_recognizer.recognizer_main(img)
+    imgPath = os.path.join(dirname, 'TestImg/Lopez.jpg')
+    img = io.imread(imgPath)
+    # detectedFace = DetectionMain.detector_main(img)
+    if(True):
+        # Recognize the face
+        main_recognizer.recognizer_main(img)
+
+    imgPath = os.path.join(dirname, 'olivetti_faces_10.jpg')
+    img = io.imread(imgPath)
+    # detectedFace = DetectionMain.detector_main(img)
+    if(True):
+        # Recognize the face
+        main_recognizer.recognizer_main(img)
 
 
 def train():
