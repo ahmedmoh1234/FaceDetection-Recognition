@@ -54,8 +54,8 @@ class AdaBoost():
         
         #create inital weights of samples and labels
         print("Creating initial weights and labels...")
-        weightPositive = np.ones(nPositive) * 1. /(2 * nImages)
-        weightNegative = np.ones(nNegative) * 1. /(2 * nImages)
+        weightPositive = np.ones(nPositive) * 1. /( nImages)
+        weightNegative = np.ones(nNegative) * 1. /( nImages)
         
         #============CHANGED================
         weights = np.hstack((weightPositive,weightNegative))
@@ -136,8 +136,6 @@ class AdaBoost():
             weights[labels!=votes[:,bestFeatureIndex]] *= np.exp(bestFeature.weight)
             weights[labels==votes[:,bestFeatureIndex]] *= np.exp(-bestFeature.weight)
             
-            #normalize weights
-            weights = weights/np.sum(weights)
             
             #remove selected feature from feature list
             featureIndices.remove(bestFeatureIndex)
