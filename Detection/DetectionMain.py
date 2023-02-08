@@ -1,3 +1,4 @@
+import cv2
 import skimage.io as io
 import skimage as sk
 from skimage.color import rgb2gray
@@ -201,7 +202,7 @@ def predict(img2, classifiersToBeUsedFn) -> list:
     ii = ut.integralImage(img)
     imgHeight, imgWidth = img.shape
 
-    if imgHeight < 24 or imgWidth < 24:
+    if imgHeight < 30 or imgWidth < 30:
         return []
 
     # scaling features
@@ -209,37 +210,37 @@ def predict(img2, classifiersToBeUsedFn) -> list:
 
     detectedFaces = []
 
-    print("Scaling features...")
-    scaledFeatures2_5 = scaleFeatures(classifiersToBeUsedFn, 2.5)
-    scaledFeatures2_5 = scaledFeatures2_5.squeeze()
+    # print("Scaling features...")
+    # scaledFeatures2_5 = scaleFeatures(classifiersToBeUsedFn, 2.5)
+    # scaledFeatures2_5 = scaledFeatures2_5.squeeze()
 
-    scaledFeatures3_75 = scaleFeatures(classifiersToBeUsedFn, 3.75)
-    scaledFeatures3_75 = scaledFeatures3_75.squeeze()
+    # scaledFeatures3_75 = scaleFeatures(classifiersToBeUsedFn, 3.75)
+    # scaledFeatures3_75 = scaledFeatures3_75.squeeze()
 
-    scaledFeatures5 = scaleFeatures(classifiersToBeUsedFn, 5)
-    scaledFeatures5 = scaledFeatures5.squeeze()
+    # scaledFeatures5 = scaleFeatures(classifiersToBeUsedFn, 5)
+    # scaledFeatures5 = scaledFeatures5.squeeze()
 
-    scaledFeatures6_25 = scaleFeatures(classifiersToBeUsedFn, 6.25)
-    scaledFeatures6_25 = scaledFeatures6_25.squeeze()
+    # scaledFeatures6_25 = scaleFeatures(classifiersToBeUsedFn, 6.25)
+    # scaledFeatures6_25 = scaledFeatures6_25.squeeze()
 
-    scaledFeatures7_5 = scaleFeatures(classifiersToBeUsedFn, 7.5)
-    scaledFeatures7_5 = scaledFeatures7_5.squeeze()
+    # scaledFeatures7_5 = scaleFeatures(classifiersToBeUsedFn, 7.5)
+    # scaledFeatures7_5 = scaledFeatures7_5.squeeze()
 
-    scaledFeatures8_75 = scaleFeatures(classifiersToBeUsedFn, 8.75)
-    scaledFeatures8_75 = scaledFeatures8_75.squeeze()
+    # scaledFeatures8_75 = scaleFeatures(classifiersToBeUsedFn, 8.75)
+    # scaledFeatures8_75 = scaledFeatures8_75.squeeze()
 
-    scaledFeatures10 = scaleFeatures(classifiersToBeUsedFn, 10)
-    scaledFeatures10 = scaledFeatures10.squeeze()
+    # scaledFeatures10 = scaleFeatures(classifiersToBeUsedFn, 10)
+    # scaledFeatures10 = scaledFeatures10.squeeze()
 
-    scaledFeatures11_25 = scaleFeatures(classifiersToBeUsedFn, 11.25)
-    scaledFeatures11_25 = scaledFeatures11_25.squeeze()
+    # scaledFeatures11_25 = scaleFeatures(classifiersToBeUsedFn, 11.25)
+    # scaledFeatures11_25 = scaledFeatures11_25.squeeze()
 
-    scaledFeatures12_5 = scaleFeatures(classifiersToBeUsedFn, 12.5)
-    scaledFeatures12_5 = scaledFeatures12_5.squeeze()
+    # scaledFeatures12_5 = scaleFeatures(classifiersToBeUsedFn, 12.5)
+    # scaledFeatures12_5 = scaledFeatures12_5.squeeze()
 
-    print("Features scaled successfully\n")
-    scaledFeatures = [scaledFeatures2_5, scaledFeatures3_75, scaledFeatures5, scaledFeatures6_25,
-                      scaledFeatures7_5, scaledFeatures8_75, scaledFeatures10, scaledFeatures11_25, scaledFeatures12_5]
+    # print("Features scaled successfully\n")
+    # scaledFeatures = [scaledFeatures2_5, scaledFeatures3_75, scaledFeatures5, scaledFeatures6_25,
+    #                   scaledFeatures7_5, scaledFeatures8_75, scaledFeatures10, scaledFeatures11_25, scaledFeatures12_5]
 
     # print the max x and y in classifiersToBeUsed
     # maxX = 0
@@ -273,41 +274,15 @@ def predict(img2, classifiersToBeUsedFn) -> list:
 
     print("Starting to detect faces...")
     shiftValue = 1
-    for features in scaledFeatures:
-        scaleFactor = features[0].scale
-        # print(f"Scale factor: {scaleFactor} and max scale factor: {maxScaleFactor}")
-        if scaleFactor > maxScaleFactor:
-            print("Scale factor greater than max scale factor, breaking")
-            break
-        # print(f"\nRunning scale factor: {scaleFactor}")
-        # print max x and y in features
-        # maxX = 0
-        # maxY = 0
-        # for f in features:
-        #     if f.x + f.width > maxX:
-        #         maxX = f.x + f.width
-        #     if f.y + f.height > maxY:
-        #         maxY = f.y + f.height
-        # print(f"maxX: {maxX}, maxY: {maxY}")
-        # print(f"min x = {0} max x = {int(imgWidth - (24 * scaleFactor))} shift value = {int(np.round(shiftValue * scaleFactor))}")
-        for x in tqdm(range(0, int(imgWidth - (24 * scaleFactor)), int(np.round(shiftValue * scaleFactor)))):
-            scaledFeatures2 = copy.deepcopy(features)
-            scaledFeatures2 = [sf + (x, 0) for sf in scaledFeatures2]
-            # maxX = 0
-            # maxY = 0
-            # for f in scaledFeatures2:
-            #     if f.x + f.width > maxX:
-            #         maxX = f.x + f.width
-            #     if f.y + f.height > maxY:
-            #         maxY = f.y + f.height
-            # print(f"maxX: {maxX}, maxY: {maxY}")
-            # print(f"min y = {0} max y = {int(imgHeight - (24 * scaleFactor))} shift value = {int(np.round(shiftValue * scaleFactor))}")
-            for y in range(0, int(imgHeight - (24 * scaleFactor)), int(np.round(shiftValue * scaleFactor))):
+    noOfScales = min(img.shape[0], img.shape[1]) // (30*1.1)      #How many times we will scale the image down using a scale factor of 1.1
+
+    for scale in range(int(noOfScales)):
+        newImg = cv2.resize(img, (int(imgWidth / 1.1), int(imgHeight / 1.1)))
+        for x in tqdm(range(0, int(imgWidth - 24 ), shiftValue )):
+            for y in range(0, int(imgHeight - 24 ), shiftValue ):
                 # print(f"scale factor: {scaleFactor}, x: {x}, y: {y}")
-                if ut.getVotes(scaledFeatures2, ii) == 1:
-                    detectedFaces.append([x, y, scaleFactor])
-                scaledFeatures2 = [
-                    sf + (0, int(np.round(shiftValue * scaleFactor))) for sf in scaledFeatures2]
+                if ut.getVotes(classifiersToBeUsedFn, ii) == 1:
+                    detectedFaces.append([x, y, 1])
         # print("Finished scale factor: ", scaleFactor)
 
     return detectedFaces
@@ -332,3 +307,12 @@ def detector_main(input_image, classifiersToBeUsed):
     detectedFace = detectFaces(input_image, classifiersToBeUsed, 30)
     return detectedFace is not None
 
+
+classifiersToBeUsed = np.load("Classifiers/classifiers.npy", allow_pickle=True)
+img = cv2.imread("test.jpg")
+detectFaces1 = detectFaces(img, classifiersToBeUsed, 30)
+
+if detectFaces1 is not None:
+    cv2.imshow("Detected face", detectFaces1)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
