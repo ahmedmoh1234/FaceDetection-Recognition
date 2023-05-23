@@ -308,6 +308,7 @@ def detector_main(input_image, classifiersToBeUsed):
     return detectedFace is not None
 
 
+os.chdir(os.getcwd() + '/Detection')
 classifiersToBeUsed = np.load("Classifiers/classifiers.npy", allow_pickle=True)
 img = cv2.imread("test.jpg")
 detectFaces1 = detectFaces(img, classifiersToBeUsed, 30)
